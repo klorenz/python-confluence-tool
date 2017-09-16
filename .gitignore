@@ -1,0 +1,6 @@
+__pycache__
+.cache
+*.pyc
+confluence-tool
+confluence_client
+pyquery

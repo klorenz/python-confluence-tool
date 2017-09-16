@@ -1,0 +1,3 @@
+#!/bin/bash
+
+PYTHONPATH=$(pwd)/$0/../.. /usr/bin/env python confluence/cli.py "$@"

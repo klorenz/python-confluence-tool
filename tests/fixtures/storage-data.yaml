@@ -1,0 +1,19 @@
+id: '71434850'
+spaceKey: IT
+title: Kay-Uwe (Kiwi) Lorenz account
+pageProperties:
+  Name: Kay-Uwe (Kiwi) Lorenz account
+  Confluence Profile: '[~kiwi]'
+  Username: kiwi
+  Office: '[IT:Aachen Office]'
+  Department: '[IT:IT department]'
+  Roles:
+    - '[IT:Team Leader role]'
+    - '[IT:IT Observer role]'
+    - MasterCAM SDK Receiver role
+    - '[IT:Bitbucket role]'
+    - '[IT:Deploy Receiver role]'
+    - '[IT:CI Observer role]'
+    - '[IT:ARB Building Linking Release Member role]'
+  Aliases:
+    - kay@moduleworks.com
