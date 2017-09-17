@@ -12,7 +12,7 @@ y
 import pyaml, yaml, sys, json, logging
 import argparse
 from os.path import expanduser
-from confluence import ConfluenceError, ConfluenceAPI
+from confluence_tool import ConfluenceError, ConfluenceAPI
 from textwrap import dedent
 
 def have_data_on_stdin():

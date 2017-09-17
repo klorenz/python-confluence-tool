@@ -60,7 +60,10 @@ class MyQuery(pyquery.PyQuery):
         """In case of creating the value from string, namespace has to be passed
         """
         if isinstance(value, basestring):
-            value = fromstring(self._wrap_root(value), self.parser)[0]
+            root = fromstring(self._wrap_root(value), self.parser)[0]
+            # TODO: warn if root has more than one child?
+            value = root.getchildren()[0]
+
         return super(MyQuery, self)._get_root(value)
 
 
