@@ -3,4 +3,4 @@ This module provides the main API of Confluence.  You can either import confluen
 """
 
 from .confluence_api import ConfluenceError, ConfluenceAPI
-from .cli import main as confluence_cli
+from .cli import command, arg, main

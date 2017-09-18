@@ -19,18 +19,21 @@ class Page:
         raise AttributeError(name)
 
     def __getitem__(self, name):
+        if name == 'pageProperties':
+            return self.pageProperty
+
         if name == 'spacekey':
             return self.data['_expandable']['space'].split("/")[-1]
         else:
             return self.data[name]
 
-        if name == 'pageProperties':
-            return self.pageProperty
-
         raise KeyError(name)
 
     def dict(self, *keys):
         '''compose new dictionary from given keys'''
+        if not len(keys):
+            return self.data
+
         result = {}
         for key in keys:
             result[key] = self[key]

@@ -28,12 +28,26 @@ class ConfluenceAPI:
     def _getauth(self):
         '''return tuple (user, password) for accessing confluence'''
         import netrc
-        if self.config['username']:
-            return (self.config['username'], self.config['password'])
-        else:
-            logger.info('hostname: %s', self.hostname)
-            (user, account, password) = netrc.netrc().authenticators(self.hostname)
-            return (user, password)
+
+        if self.config.get('username'):
+
+            if not self.config['password']:
+                import keyring
+                baseurl = self.config['baseurl']
+                password = keyring.get_password(baseurl, self.config['username'])
+                if password is None:
+                    import getpass
+                    password = getpass
+
+            else:
+                password = self.config.get('password')
+
+            if password is not None:
+                return (self.config['username'], password)
+
+        logger.info('hostname: %s', self.hostname)
+        (user, account, password) = netrc.netrc().authenticators(self.hostname)
+        return (user, password)
 
     def __getattr__(self, name):
         if name == 'session':
@@ -120,7 +134,6 @@ class ConfluenceAPI:
         """get user information"""
         return self.get("/rest/api/user", username=username, expand=expand)
 
-
     def copyPage(self, source, target=None, recursive=True, parent=None, space=None, delete=False):
         '''copy source page as child of target and descend all children
 
@@ -198,9 +211,17 @@ class ConfluenceAPI:
 
         return Page(self, self.get( page_id, expand=expand), expand=expand)
 
-    def getPages(self, cql, expand=''):
-        for page in self.iterate(cql=cql, expand=expand):
-            yield Page(self, page, expand)
+    def getPages(self, cql, expand='', filter=None):
+        if not expand:
+            expand = []
+
+        if filter is not None:
+            for page in self.getPagesWithProperties(cql, page_prop_filter=filter, expand=expand):
+                yield page
+
+        else:
+            for page in self.iterate(cql=cql, expand=expand):
+                yield Page(self, page, expand)
 
     def getSpaceHomePage(self, space_key):
         logger.info("space_key: %s", space_key)
@@ -225,7 +246,7 @@ class ConfluenceAPI:
         return self.post('/rest/api/content/%s/label' % page_id, labels)
 
 
-    def updatePage(self, page_id, title, body=None, version=None, type='page', storage=None):
+    def updatePage(self, id, title, body=None, version=None, type='page', storage=None):
         if isinstance(version, int):
             version = {'number': int(version)+1},
 
@@ -244,14 +265,14 @@ class ConfluenceAPI:
                 }
             }
 
-        return self.put('/rest/api/content/%s' % page_id,
+        return self.put('/rest/api/content/%s' % id,
             version = version,
             type    = type,
             title   = title,
             body    = body
         )
 
-    def editPage(self, cql, editor):
+    def editPage(self, cql, editor, filter=None):
         """
         Editor works with mustache templates and jQuery assingments.
 
@@ -279,7 +300,7 @@ class ConfluenceAPI:
 
         editor = StorageEditor(editor)
 
-        for page in getPages(page):
+        for page in self.getPages(cql, filter=filter):
             yield page, editor.edit(page)
 
 
@@ -293,7 +314,7 @@ class ConfluenceAPI:
         if pageSpec:
             cql = self.resolveCQL(pageSpec)
         if isinstance(expand, (list, set)):
-            expand = list(expand).join(',')
+            expand = ','.join(list(expand))
 
         return self.get('/rest/api/content/search', cql = cql, expand=expand, limit=limit, start=start)
 
@@ -331,10 +352,10 @@ class ConfluenceAPI:
 
             logger.info("next round: start=%s, limit=%s, size=%s, result_limit=%s", start, limit, result['size'], result['limit'])
 
-    SPACE_PAGE_REF = r'^([A-Z]*):(.*)$'
-    PAGE_REF = r'^:(.*)$'
-    PAGE_ID = r'^(\d+)$'
-    PAGE_URI = r'api/content/(\d+)$'
+    SPACE_PAGE_REF = re.compile(r'^([A-Z]*):(.*)$')
+    PAGE_REF = re.compile(r'^:(.*)$')
+    PAGE_ID = re.compile(r'^(\d+)$')
+    PAGE_URI = re.compile(r'api/content/(\d+)$')
 
     def resolveCQL(self, ref):
         """resolve some string to CQL query
@@ -362,16 +383,16 @@ class ConfluenceAPI:
         if not is_string(ref):
             ref = str(ref)
 
-        if match(SPACE_PAGE_REF):
+        if match(self.SPACE_PAGE_REF):
             return "space = {} AND title  = \"{}\"".format(*self.mob)
 
-        if match(PAGE_REF):
+        if match(self.PAGE_REF):
             return "title  = \"{}\"".format(*self.mob)
 
-        if match(PAGE_ID):
+        if match(self.PAGE_ID):
             return "ID  = {}".format(*self.mob)
 
-        if match(PAGE_URI):
+        if match(self.PAGE_URI):
             return "ID  = {}".format(*self.mob)
 
         return ref
