@@ -4,3 +4,5 @@ __pycache__
 confluence-tool
 confluence_client
 pyquery
+MANIFEST
+dist

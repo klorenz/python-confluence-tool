@@ -17,7 +17,7 @@ command = CommandDecorator(
     arg('-u', '--username',    help="username for logging in (if not present, tried to read from netrc)"),
     arg('-p', '--password',    help="password for logging in (if not present, tried to read from netrc)"),
     arg('-d', '--debug',       action="store_true", help="get more information on exceptions"),
-    prog = "confluence-tool"
+    #prog = 
 )
 
 positional_arg_cql = arg('cql', help="SPACE:title, pageID or CQL")

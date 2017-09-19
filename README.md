@@ -1,1 +1,1 @@
-Documentation with pydoc-markdown (and mkdocs)
+README.txt
