@@ -1,8 +1,9 @@
 from urlparse import urlparse
 from .page import Page
-import re
+import re, json
 import requests
 from .storage_editor import StorageEditor
+from .page_properties import PagePropertiesEditor
 
 import logging
 logger = logging.getLogger('confluence.api')
@@ -246,9 +247,9 @@ class ConfluenceAPI:
         return self.post('/rest/api/content/%s/label' % page_id, labels)
 
 
-    def updatePage(self, id, title, body=None, version=None, type='page', storage=None):
-        if isinstance(version, int):
-            version = {'number': int(version)+1},
+    def updatePage(self, id, title, body=None, version=None, type='page', storage=None, wiki=None):
+        if not isinstance(version, dict):
+            version = {'number': int(version)}
 
         if storage is not None:
             body = {
@@ -397,8 +398,9 @@ class ConfluenceAPI:
 
         return ref
 
+
     def setPageProperties(self, document):
-        pages = document.pop('pages')
+        pages = document.pop('pages', None)
 
         if pages is not None:
             for page in pages:
@@ -414,34 +416,44 @@ class ConfluenceAPI:
             cql = document['cql']
 
         if cql is not None:
-            editor = PagePropertyEditor(self, **document)
+            editor = PagePropertiesEditor(confluence=self, **document)
 
             found = False
-            for page in self.getPagesWithProperties(cql, expand=['body.storage']):
+            for page in self.getPagesWithProperties(cql, expand=['body.storage', 'version']):
                 new_content = editor.edit(page)
                 found = True
-                yield self.updatePage(
-                    page_id = page['id'],
-                    version = page['version']['number']+1,
-                    title   = page['title'],
-                    storage = new_content)
+                yield dict(
+                    page    = page,
+                    content = new_content,
+                    result  = self.updatePage(
+                        id = page['id'],
+                        version = int(page['version']['number'])+1,
+                        title   = page['title'],
+                        storage = new_content
+                    ))
 
             if not found:
                 new_content = editor.edit()
                 (space, title) = document['page'].split(':', 1)
-                yield self.createPage(
-                    space = space,
-                    title = title,
-                    storage = new_content
-                )
-                #self.createPage(space, title, storage, parent=None):
-                # create new page
-                pass
+                yield dict(
+                    page    = dict(
+                        spacekey = space,
+                        title    = title,
+                        ),
+                    content = new_content,
+                    result  = self.createPage(
+                        space = space,
+                        title = title,
+                        storage = new_content,
+                    ))
+
 
 
     PAGE_PROP_FILTER = re.compile(r'^(.*?)([!=])=(.*)')
     def getPagesWithProperties(self, cql, page_prop_filter=None, expand=[], **options):
         page_prop_filters = []
+
+        cql = self.resolveCQL(cql)
 
         if page_prop_filter is not None:
             if not isinstance(page_prop_filter, list):

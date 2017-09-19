@@ -141,7 +141,7 @@ def main(argv=None):
             traceback.print_exc()
             return 1
 
-        print "Config file missing.  Please run 'confluence-tool config' or specify --baseurl"
+        #print "Config file missing.  Please run 'confluence-tool config' or specify --baseurl"
         return 1
 
     except StandardError as e:

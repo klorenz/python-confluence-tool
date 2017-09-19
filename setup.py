@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='confluence-tool',
-    version='0.0.3',
+    version='0.0.4',
     description='Confluence API and CLI',
     author='Kay-Uwe (Kiwi) Lorenz',
     author_email='kiwi@franka.dyndns.org',
@@ -15,7 +15,7 @@ setup(
             'html5print',
             'pyquery',
         ],
-    #url='https://www.python.org/sigs/distutils-sig/',
+    url='https://github.com/klorenz/python-confluence-tool',
     packages=['confluence_tool', 'confluence_tool.cli', ],
     package_data = {
         'confluence_tool': ['templates/*.mustache', 'templates/*.html']
@@ -24,8 +24,8 @@ setup(
 
     entry_points = dict(
         console_scripts = [
-            'ct = confluence_tool:main'
-            'confluence-tool = confluence_tool:main'
+            'ct = confluence_tool:main',
+            'confluence-tool = confluence_tool:main',
         ]
     ),
     license="MIT",

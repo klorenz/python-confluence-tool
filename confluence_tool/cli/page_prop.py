@@ -1,5 +1,6 @@
-import sys
+import sys, re
 from .cli import command, arg
+import pyaml
 
 @command('page-prop-get',
     arg('cql', help="SPACE:title, pageID or CQL"),
@@ -82,11 +83,6 @@ def cmd_page_prop_set(config):
     - `pagePropertiesEditor` - Define how to change page properties
     """
 
-    pprint(config.args)
-
-    #sys.exit(0)
-    #config['config.args.file
-
     confluence = config.getConfluenceAPI()
     first = True
 
@@ -154,5 +150,5 @@ def cmd_page_prop_set(config):
                 } ]
 
     for doc in documents:
-        for page in confluence.setPageProperties(doc):
-            print "updated {}".format(page['id'], )
+        for result in confluence.setPageProperties(doc):
+            print "updated {}".format(result['result']['id'], )
