@@ -163,8 +163,12 @@ def cmd_page_prop_set(config):
             if 'parent' not in doc:
                 doc['parent'] = config.get('parent')
 
+        doc_labels = doc.get('labels', doc.get('label', []))
+        if not isinstance(doc_labels, list):
+            doc_labels = [ doc_labels ]
 
         for result in confluence.setPageProperties(doc):
             print "updated {}".format(result['result']['id'], )
-            if len(labels):
-                confluence.addLabels(result['result']['id'], labels)
+            _labels = labels+doc_labels
+            if len(_labels):
+                confluence.addLabels(result['result']['id'], _labels)
