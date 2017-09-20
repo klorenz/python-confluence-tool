@@ -35,6 +35,8 @@ def cmd_page_prop_get(config):
 @command('page-prop-set',
     arg('cql', nargs="?", help="SPACE:title, pageID or CQL"),
     arg('-f', '--filter', help="page property filter in format pageprop==value or pageprop!=value", default=None),
+    arg('-p', '--parent', help="specify parent for a page, which might be created"),
+    arg('-l', '--label', action="append", help="add these labels to the page"),
     arg('propset', nargs="*", help="property setting expression"),
     arg('file', nargs="*", help="file to read data from")
     )
@@ -140,6 +142,9 @@ def cmd_page_prop_set(config):
             'page': config['cql'],
             'pagePropertiesEditor': propset,
         }
+        if config.get('parent', None):
+            document['parent'] = config['parent']
+
         documents = [document] + documents
     else:
         if config['cql']:
@@ -149,6 +154,17 @@ def cmd_page_prop_set(config):
                     'pagePropertiesEditor': documents[0]
                 } ]
 
+            if config.get('parent', None):
+                documents[0]['parent'] = config['parent']
+
+    labels = config.get('label', [])
     for doc in documents:
+        if config.get('parent'):
+            if 'parent' not in doc:
+                doc['parent'] = config.get('parent')
+
+
         for result in confluence.setPageProperties(doc):
             print "updated {}".format(result['result']['id'], )
+            if len(labels):
+                confluence.addLabels(result['result']['id'], labels)

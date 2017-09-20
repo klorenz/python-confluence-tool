@@ -445,6 +445,7 @@ class ConfluenceAPI:
                         space = space,
                         title = title,
                         storage = new_content,
+                        parent = document.get('parent', None)
                     ))
 
 
@@ -492,6 +493,10 @@ class ConfluenceAPI:
         for page in filter(page_prop_filterer, self.getPages(cql, expand=expand + ['body.view'])):
             yield page
 
+    def getContentId(self, page):
+        (space, title, id) = self.extractPage(page)
+        return id
+
     def extractPage(self, pageSpec):
         results = self.findPages(pageSpec, expand='space')
 
@@ -512,7 +517,7 @@ class ConfluenceAPI:
         )
 
         if parent is not None:
-            data['ancestors'] = [{'id': parent}]
+            data['ancestors'] = [{'id': self.getContentId(parent)}]
 
         return self.post('/rest/api/content', **data)
 

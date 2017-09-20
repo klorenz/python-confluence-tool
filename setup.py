@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='confluence-tool',
-    version='0.0.4',
+    version='0.0.5',
     description='Confluence API and CLI',
     author='Kay-Uwe (Kiwi) Lorenz',
     author_email='kiwi@franka.dyndns.org',
@@ -14,6 +14,9 @@ setup(
             'keyrings.alt',
             'html5print',
             'pyquery',
+            'pyaml',
+            'pystache',
+            'argdeco'
         ],
     url='https://github.com/klorenz/python-confluence-tool',
     packages=['confluence_tool', 'confluence_tool.cli', ],

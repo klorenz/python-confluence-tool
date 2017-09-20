@@ -12,10 +12,33 @@ import sys
         arg('--html', action="store_true", help="convenience for: -e 'body.view' -F '{body[view][value]}'"),
         arg('--ls', action="store_true", help="convenience for: -F '{id} {spacekey} {title}'"),
     ),
+    arg('-d', '--data', help="filename containing data selector in YAML or JSON format"),
     arg('field', nargs="*", help='field to dump')
 )
 def show(config):
     """show a confluence item
+
+    If specifying data selector file, there is added a special field
+    body['data'] to each page.
+
+    Format of selector file:
+
+    select: <CSS Selector for jQuery>
+    list:
+        - attr: href
+          name: href
+
+    Following keys:
+
+    - list: each item produces a list item.  Input is current selected element.
+    - object: each item produces a object property.  Each item must have "name"
+        key for specifing the properties name
+    - attr: read named attribute from current selected element
+    - select: find elements using this selector.  For each of them apply current
+      spec
+    - text: 'text' or 'html'.  this is the default and default is to return
+        'text'.
+
 
     """
     first = True
@@ -26,21 +49,21 @@ def show(config):
 
     if not config.get('format') and not config.get('expand'):
         if config.get('html'):
-            config['format'] = '{body[view][value]}'
+            config['format'] = u'{body[view][value]}'
             config['expand'] = 'body.view'
 
             from html5print import HTMLBeautifier
             output_filter = lambda x: HTMLBeautifier.beautify(x, 4)
 
         elif config.get('storage'):
-            config['format'] = '{body[storage][value]}'
+            config['format'] = u'{body[storage][value]}'
             config['expand'] = 'body.storage'
 
             from html5print import HTMLBeautifier
             output_filter = lambda x: HTMLBeautifier.beautify(x, 4)
 
         elif config.get('ls'):
-            config['format'] = '{id}  {spacekey}  {title}'
+            config['format'] = u'{id}  {spacekey}  {title}'
             config['field'] = ['id', 'spacekey', 'title']
 
     results = []
@@ -56,7 +79,18 @@ def show(config):
                 fields = [ result[f] for f in config['field'] ]
                 print config['format'].format(*fields)
 
-            print output_filter(config['format'].format(**result))
+            print output_filter(unicode(config['format']).format(**result))
+
+    elif config.get('data'):
+        if config.get('data') == '-':
+            data = get_list_data(sys.stdin.read())
+        else:
+            with open(config.get('data'), 'r') as f:
+                data = get_list_data(f.read())
+
+        from ..data_generator import generate_data
+
+        pyaml.p(generate_data(data, results))
 
     else:
         if len(results) == 1:
