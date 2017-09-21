@@ -12,10 +12,16 @@ import sys
         arg('--html', action="store_true", help="convenience for: -e 'body.view' -F '{body[view][value]}'"),
         arg('--ls', action="store_true", help="convenience for: -F '{id} {spacekey} {title}'"),
     ),
-    arg('-d', '--data', help="filename containing data selector in YAML or JSON format"),
+#    arg('-d', '--data', help="filename containing data selector in YAML or JSON format"),
     arg('field', nargs="*", help='field to dump')
 )
 def show(config):
+    """show a confluence item
+
+
+    """
+
+
     """show a confluence item
 
     If specifying data selector file, there is added a special field

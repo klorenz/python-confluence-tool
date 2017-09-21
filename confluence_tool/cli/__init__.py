@@ -1,6 +1,9 @@
 from os.path import expanduser
 from confluence_tool import ConfluenceError, ConfluenceAPI
 import pyaml, yaml
+import logging
+
+logging.basicConfig()
 
 import keyring
 
@@ -157,3 +160,4 @@ import edit
 import page_prop
 import show
 import config
+import labels

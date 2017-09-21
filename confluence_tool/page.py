@@ -16,11 +16,21 @@ class Page:
         if name == 'pageProperty':
             self.pageProperty = self.data['pageProperties'] = dict(self.loadPageProperties())
             return self.pageProperty
+
+        if name == 'labels':
+            result = self.api.getLabels(self.data['id'])
+            self.labels = [ l['name'] for l in result['results']]
+            return self.labels
+
+        if name in self.data:
+            return self.data[name]
         raise AttributeError(name)
 
     def __getitem__(self, name):
         if name == 'pageProperties':
             return self.pageProperty
+        if name == 'labels':
+            return self.labels
 
         if name == 'spacekey':
             return self.data['_expandable']['space'].split("/")[-1]

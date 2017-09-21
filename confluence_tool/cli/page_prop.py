@@ -33,10 +33,10 @@ def cmd_page_prop_get(config):
 
 
 @command('page-prop-set',
-    arg('cql', nargs="?", help="SPACE:title, pageID or CQL"),
     arg('-f', '--filter', help="page property filter in format pageprop==value or pageprop!=value", default=None),
     arg('-p', '--parent', help="specify parent for a page, which might be created"),
     arg('-l', '--label', action="append", help="add these labels to the page"),
+    arg('cql', nargs="?", help="SPACE:title, pageID or CQL"),
     arg('propset', nargs="*", help="property setting expression"),
     arg('file', nargs="*", help="file to read data from")
     )
@@ -158,6 +158,9 @@ def cmd_page_prop_set(config):
                 documents[0]['parent'] = config['parent']
 
     labels = config.get('label', [])
+    if labels is None:
+        labels = []
+
     for doc in documents:
         if config.get('parent'):
             if 'parent' not in doc:

@@ -7,6 +7,7 @@ from .page_properties import PagePropertiesEditor
 
 import logging
 logger = logging.getLogger('confluence.api')
+#logger.setLevel(logging.DEBUG)
 
 def is_string(s):
     # python 2.7
@@ -208,7 +209,12 @@ class ConfluenceAPI:
             expand=",".join(expand)
 
         if not page_id.startswith('/rest'):
-            page_id = '/rest/api/content/%s' % page_id
+            if str(page_id).isdigit():
+                page_id = '/rest/api/content/%s' % page_id
+            else:
+                pages = [p for p in self.getPages(page_id, expand=expand)]
+                assert len(pages) == 1
+                return pages[0]
 
         return Page(self, self.get( page_id, expand=expand), expand=expand)
 
@@ -237,6 +243,9 @@ class ConfluenceAPI:
         return self.post_json('/rest/api/contentbody/convert/storage',
             value=content, representation='wiki')['value']
 
+    def getLabels(self, page_id):
+        return self.get('/rest/api/content/%s/label' % page_id)
+
     def addLabels(self, page_id, labels):
         if not isinstance(labels, list):
             labels = [ labels ]
@@ -246,6 +255,14 @@ class ConfluenceAPI:
         logger.info("labels: %s", labels)
         return self.post('/rest/api/content/%s/label' % page_id, labels)
 
+    def deleteLabels(self, page_id, labels):
+        if not isinstance(labels, list):
+            labels = [ labels ]
+        result = []
+        logger.info("remove labels: %s", labels)
+        for label in labels:
+            result.append(self.delete('/rest/api/content/%s/label/%s' % (page_id, label)))
+        return result
 
     def updatePage(self, id, title, body=None, version=None, type='page', storage=None, wiki=None):
         if not isinstance(version, dict):
@@ -316,7 +333,6 @@ class ConfluenceAPI:
             cql = self.resolveCQL(pageSpec)
         if isinstance(expand, (list, set)):
             expand = ','.join(list(expand))
-
         return self.get('/rest/api/content/search', cql = cql, expand=expand, limit=limit, start=start)
 
     def iterate(self, *args, **kwargs):
@@ -357,6 +373,8 @@ class ConfluenceAPI:
     PAGE_REF = re.compile(r'^:(.*)$')
     PAGE_ID = re.compile(r'^(\d+)$')
     PAGE_URI = re.compile(r'api/content/(\d+)$')
+    PARENT = re.compile(r'(.*)>')
+    ANCESTOR = re.compile(r'(.*)>>')
 
     def resolveCQL(self, ref):
         """resolve some string to CQL query
@@ -365,6 +383,8 @@ class ConfluenceAPI:
             resolve this reverence to a valid CQL
 
             * ``SPACE:page title`` -> ``space = SPACE and title = "page title"``
+            * ``SPACE:page title>`` -> `` parent = <id of specified page>
+            * ``SPACE:page title>>`` -> `` ancestor = <id of specified page>
             * ``:page title`` ->  ``title = "page title"``
             * ``12345`` -> ``ID = 12345``
             * ends with ``api/content/12345`` -> ``ID = 12345``
@@ -383,6 +403,18 @@ class ConfluenceAPI:
 
         if not is_string(ref):
             ref = str(ref)
+
+        ref = ref.strip()
+
+        if match(self.ANCESTOR):
+            query = self.resolveCQL(*self.mob)
+            p = self.getPage(query)
+            return "ancestor = {}".format(p.id)
+
+        if match(self.PARENT):
+            query = self.resolveCQL(*self.mob)
+            p = self.getPage(query)
+            return "parent = {}".format(p.id)
 
         if match(self.SPACE_PAGE_REF):
             return "space = {} AND title  = \"{}\"".format(*self.mob)
