@@ -13,7 +13,14 @@ from ..confluence_api import ConfluenceError
 def cmd_page_prop_get(config):
     confluence = config.getConfluenceAPI()
     results = []
-    for pp in confluence.getPagesWithProperties(expand=['labels'], **config.dict('cql', 'filter')):
+    config['cql'] = confluence.resolveCQL(config['cql'])
+    first = True
+    for pp in confluence.getPages(**config.dict('cql', 'filter')):
+        if first:
+            first = False
+        else:
+            print "---"
+
         if config.get('add'):
             results.append(confluence.addLabels(pp.id, config['add']))
         if config.get('remove'):

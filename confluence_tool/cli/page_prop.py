@@ -1,10 +1,8 @@
 import sys, re
-from .cli import command, arg
+from .cli import command, arg, arg_format, arg_cql, arg_filter
 import pyaml
 
-@command('page-prop-get',
-    arg('cql', help="SPACE:title, pageID or CQL"),
-    arg('-f', '--filter', help="page property filter in format pageprop==value or pageprop!=value", default=None),
+@command('page-prop-get', arg_cql, arg_filter, arg_format,
     arg('props', nargs="*", help="properties to retrieve"),
     )
 def cmd_page_prop_get(config):
@@ -16,20 +14,43 @@ def cmd_page_prop_get(config):
 
     Optionally you can pass some page property filter expressions to filter
     pages on page properties additionally to CQL query.
+
+    Please note, when using `--format`:
+
+    For convenience in format string, you can directly refer to page properties
+    in format string.  Items referring to page can be fetched with `page_id`,
+    `page_title` and `page_spacekey`.
     """
     confluence = config.getConfluenceAPI()
     first = True
 
     for pp in confluence.getPagesWithProperties(**config.dict('cql', 'filter')):
-        if not first:
-            print("---")
+        if config.get('format'):
+            try:
+
+                if '{}' in config['format']:
+                    fields = [ pp.pageProperty.get(f, '') for f in config['props'] ]
+                    print unicode(config['format']).format(*fields).encode('utf-8')
+                else:
+                    _props = dict(pp.getPageProperties())
+                    _props.update(dict([ (k.lower(), v) for (k,v) in _props.items()]))
+                    _props.update(page_id=pp.id, page_title=pp.title, page_spacekey=pp.spacekey)
+
+                    print unicode(config['format']).format(**_props).encode('utf-8')
+            except UnicodeEncodeError:
+                import traceback
+                sys.stderr.write("Error formatting %s:%s\n %s\n" % (pp.spacekey, pp.title, repr(dict(pp.getPageProperties()))))
+
         else:
-            first = False
+            if not first:
+                print("---")
+            else:
+                first = False
 
-        result = pp.dict("id", "spacekey", "title")
-        result['pageProperties'] = dict(pp.getPageProperties(*config.props))
+            result = pp.dict("id", "spacekey", "title")
+            result['pageProperties'] = dict(pp.getPageProperties(*config.props))
 
-        pyaml.p(result)
+            pyaml.p(result)
 
 
 @command('page-prop-set',

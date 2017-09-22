@@ -219,6 +219,7 @@ class ConfluenceAPI:
         return Page(self, self.get( page_id, expand=expand), expand=expand)
 
     def getPages(self, cql, expand='', filter=None):
+        logger.info("getPages cql=%s, expand=%s, filter=%s", cql, expand, filter )
         if not expand:
             expand = []
 

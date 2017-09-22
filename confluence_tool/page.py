@@ -1,9 +1,21 @@
 from .page_properties import get_page_properties
+from HTMLParser import HTMLParser
+htmlparser = HTMLParser()
 
 class Page:
     def __init__(self, api, data, expand=None):
         self.api = api
         self.data = data
+
+        if 'body' in self.data:
+            body = self.data['body']
+            if 'storage' in body:
+                body = body['storage']
+                body['value'] = htmlparser.unescape(body['value'])
+            elif 'view' in body:
+                body = body['view']
+                body['value'] = htmlparser.unescape(body['value'])
+
         if hasattr(expand, 'split'):
             self.expand = set([ s.strip() for s in expand.split(',') ])
         else:
@@ -21,6 +33,9 @@ class Page:
             result = self.api.getLabels(self.data['id'])
             self.labels = [ l['name'] for l in result['results']]
             return self.labels
+
+        if name == 'spacekey':
+            return self['spacekey']
 
         if name in self.data:
             return self.data[name]

@@ -19,7 +19,7 @@ command = CommandDecorator(
     arg('-d', '--debug',       action="store_true", help="get more information on exceptions"),
 )
 
-positional_arg_cql = arg('cql', help="SPACE:title, pageID or CQL, run '%(prog)s cql -h' for more help")
+arg_cql = positional_arg_cql = arg('cql', help="SPACE:title, pageID or CQL, run '%(prog)s cql -h' for more help")
 positional_optarg_cql = arg('cql', nargs="?", help="SPACE:title, pageID or CQL, '%(prog)s cql -h' for more help")
 
 arg_expand = arg('-e', '--expand', help="values to expand")
