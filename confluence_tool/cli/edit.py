@@ -1,11 +1,11 @@
 import yaml, pyaml, sys
 from difflib import Differ
-from .cli import command, arg
+from .cli import command, arg, optarg_cql, arg_filter
 #from .cli import arg
 
 @command('edit',
-    arg('cql', nargs="?", help="SPACE:title, pageID or CQL"),
-    arg('-f', '--filter', help="page property filter in format pageprop==value or pageprop!=value", default=None),
+    optarg_cql,
+    arg_filter,
     arg('file', nargs="?", help="file to read data from"),
     # need arg_group
     arg('--show', action="store_true", help="show new content"),
@@ -65,4 +65,3 @@ def cmd_edit(config):
 
             result = confluence.updatePage(**p)
             pyaml.p(result)
-            

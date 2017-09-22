@@ -2,7 +2,7 @@ import sys, re
 from .cli import command, arg, arg_format, arg_cql, arg_filter
 import pyaml
 
-@command('page-prop-get', arg_cql, arg_filter, arg_format,
+@command('page-prop-get', optarg_cql, arg_filter, arg_format,
     arg('props', nargs="*", help="properties to retrieve"),
     )
 def cmd_page_prop_get(config):
@@ -54,10 +54,10 @@ def cmd_page_prop_get(config):
 
 
 @command('page-prop-set',
-    arg('-f', '--filter', help="page property filter in format pageprop==value or pageprop!=value", default=None),
+    arg_filter,
     arg('-p', '--parent', help="specify parent for a page, which might be created"),
     arg('-l', '--label', action="append", help="add these labels to the page"),
-    arg('cql', nargs="?", help="SPACE:title, pageID or CQL"),
+    optarg_cql,
     arg('propset', nargs="*", help="property setting expression"),
     arg('file', nargs="*", help="file to read data from")
     )

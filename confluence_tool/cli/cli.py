@@ -23,7 +23,7 @@ arg_cql = positional_arg_cql = arg('cql', help="SPACE:title, pageID or CQL, run 
 positional_optarg_cql = arg('cql', nargs="?", help="SPACE:title, pageID or CQL, '%(prog)s cql -h' for more help")
 
 arg_expand = arg('-e', '--expand', help="values to expand")
-arg_filter = arg('-f', '--filter', help="page property filter (name==value or name!=value)")
+arg_filter = arg('-f', '--filter', help="page property filter run '%(prog)s page-prop-filtering -h' for more help")
 arg_write_format = arg('-w', '--write', help="format to write", choices=['yaml', 'json'], default="yaml")
 arg_format = arg('-F', '--format', help="format string for formatting the output.  May be either mustache or format string")
 
@@ -55,4 +55,31 @@ def cql_help(config):
      - `"IT:Some title"` to find page titled "Some title" in space "IT"
 
     """
+    command['cql'].print_help()
+
+@command('page-prop-filtering')
+def page_prop_filtering(config):
+    """How to filter pages using page properties.
+
+    Addionally to CQL queries, you can filter results (on client side) using
+    page property filters.
+
+    These filters are pretty simple, but helpful :)
+
+    Page property filters are passes with `-F` command line option, and you can
+    repeat this option to pass multiple filters, which all have to match against
+    a page.
+    l
+    - `-F <NAME>==<VALUE>`  Value must be in property named `<NAME>`.  If
+      property is a list, then this is true, if `<VALUE>` is one of the list
+      values.  (works like labels in CQL).
+
+    - `-F <NAME>!=<VALUE>`  Value must not be in property named `<NAME>`.
+
+    - `-F '!<NAME>'`  Matches if property `<NAME>` is not present in page
+
+    - `-F '<NAME>?'`  Matches if property `<NAME>` is present in page
+
+    """
+
     command['cql'].print_help()

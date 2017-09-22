@@ -1,11 +1,11 @@
 import sys, re
-from .cli import command, arg
+from .cli import command, arg, arg_cql, arg_filter
 import pyaml
 from ..confluence_api import ConfluenceError
 
 @command('labels',
-    arg('cql', help="SPACE:title, pageID or CQL"),
-    arg('-f', '--filter', help="page property filter in format pageprop==value or pageprop!=value", default=None),
+    arg_cql,
+    arg_filter,
     arg('-a', '--add', action="append", help="label to add"),
     arg('-r', '--remove', action="append", help="label to remove"),
     arg('-q', '--quiet', action="store_true", help="do not show labels of the page"),

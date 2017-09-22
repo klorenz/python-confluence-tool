@@ -7,7 +7,9 @@ from .page_properties import PagePropertiesEditor
 
 import logging
 logger = logging.getLogger('confluence.api')
-#logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.DEBUG)
+
+filter_func = filter
 
 def is_string(s):
     # python 2.7
@@ -224,7 +226,7 @@ class ConfluenceAPI:
             expand = []
 
         if filter is not None:
-            for page in self.getPagesWithProperties(cql, page_prop_filter=filter, expand=expand):
+            for page in self.getPagesWithProperties(cql, filter=filter, expand=expand):
                 yield page
 
         else:
@@ -483,22 +485,22 @@ class ConfluenceAPI:
 
 
 
-    PAGE_PROP_FILTER = re.compile(r'^(.*?)([!=])=(.*)')
-    def getPagesWithProperties(self, cql, page_prop_filter=None, expand=[], **options):
+    PAGE_PROP_FILTER = re.compile(r'^(?:(.*?)([!=])=(.*)|!(.*)|(.*)\?)$')
+    def getPagesWithProperties(self, cql, filter=None, expand=[], **options):
         page_prop_filters = []
 
         cql = self.resolveCQL(cql)
 
-        if page_prop_filter is not None:
-            if not isinstance(page_prop_filter, list):
-                page_prop_filter = [ page_prop_filter ]
+        if filter is not None:
+            if not isinstance(filter, list):
+                filter = [ filter ]
 
-            for item in page_prop_filter:
+            for item in filter:
                 if is_string(item):
                     m = self.PAGE_PROP_FILTER.search(item)
                     if m:
-                        (name, cmp, value) = m.groups()
-                        page_prop_filters.append(dict(name=name, cmp=cmp, value=value))
+                        (name, cmp, value, not_exists, present) = m.groups()
+                        page_prop_filters.append(dict(name=name, cmp=cmp, value=value, not_exists=not_exists, present=present))
                 else:
                     page_prop_filters.append(item)
 
@@ -509,21 +511,35 @@ class ConfluenceAPI:
             result = True
             for f in page_prop_filters:
                 value = page.getPageProperty(f['name'])
+                cmp = f['cmp']
+                not_exists = f['not_exists']
+                present = f['present']
+
+                logger.info("filter: %s, value = %s", f, value)
 
                 if cmp == '=':
                     if isinstance(value, list):
                         result = result and f['value'] in value
                     else:
                         result = result and value == f['value']
+                elif not_exists:
+                    value = page.getPageProperty(f['not_exists'])
+                    result = result and value is None
+
+                elif present:
+                    value = page.getPageProperty(f['present'])
+                    result = result and value is not None
+
                 else:
                     if isinstance(value, list):
                         result = result and f['value'] not in value
                     else:
                         result = result and value != f['value']
 
+            logger.info("filterer result = %s", result)
             return result
 
-        for page in filter(page_prop_filterer, self.getPages(cql, expand=expand + ['body.view'])):
+        for page in filter_func(page_prop_filterer, self.getPages(cql, expand=expand + ['body.view'])):
             yield page
 
     def getContentId(self, page):
