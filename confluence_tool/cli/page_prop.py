@@ -20,6 +20,20 @@ def cmd_page_prop_get(config):
     For convenience in format string, you can directly refer to page properties
     in format string.  Items referring to page can be fetched with `page_id`,
     `page_title` and `page_spacekey`.
+
+    Examples:
+
+     - `ct page-prop-get "SpaceName:Some Title"`
+
+        gets all page properties from "Some title" in space "Space Name"
+
+     - `ct page-prop-get "SpaceName:Some Title" Pageproperty1 Pageproperty2`
+
+       get Pageproperty1 and Pageproperty2 from "Some title" in space "Space Name"
+
+     - `ct page-prop-get "label = 'some-label'"`
+
+        gets all page properties for all pages with label 'some-label'
     """
     confluence = config.getConfluenceAPI()
     first = True
@@ -104,6 +118,19 @@ def cmd_page_prop_set(config):
         above.  This will be used as templates only for that key
     - `pages` - list of documents like this
     - `pagePropertiesEditor` - Define how to change page properties
+
+    Examples:
+
+     - `ct page-prop-set -p "SpaceName:Parent Title" "SpaceName:Some Title"
+       PageProp1:='Content1' 'Page Prop2:=Content 2' 'Page-Prop3:=Content3'`
+
+       Replaces page properties for Page "SpaceName:Some Title" (creates page and
+       page-properties if not existent):
+
+     - `ct page-prop-set -p -l "label1" -l "label2" "SpaceName:Parent Title"
+       "SpaceName:Some Title" PageProp:='Content'`
+
+       Additionally adds label "label1" and "label2"
     """
 
     confluence = config.getConfluenceAPI()

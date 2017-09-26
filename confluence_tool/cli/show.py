@@ -45,7 +45,27 @@ def show(config):
     - text: 'text' or 'html'.  this is the default and default is to return
         'text'.
 
+    Examples:
 
+     - `ct show "SpaceName:Some Title"`
+
+        gets page information which can be expanded
+
+     - `ct show "SpaceName:Some Title" -e body`
+
+        gets page information with expanded body (can also be expanded)
+
+     - `ct show "SpaceName:Some Title" -e body,container`
+
+        gets page information and expand more than one
+
+     - `ct show "SpaceName:Some Title" -e 'body.view' -F '{body[view][value]}'`
+
+        gets page information with more detailed expanded body (this is --html)
+
+     - `ct show "SpaceName:Some Title" -F {_links[self]}`
+
+        gets "self"-link expanded from "_links" from "Some Title"
     """
     first = True
 
