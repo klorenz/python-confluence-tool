@@ -20,7 +20,7 @@ command = CommandDecorator(
 )
 
 arg_cql = positional_arg_cql = arg('cql', help="SPACE:title, pageID or CQL, run '%(prog)s cql -h' for more help")
-positional_optarg_cql = arg('cql', nargs="?", help="SPACE:title, pageID or CQL, '%(prog)s cql -h' for more help")
+optarg_cql = positional_optarg_cql = arg('cql', nargs="?", help="SPACE:title, pageID or CQL, '%(prog)s cql -h' for more help")
 
 arg_expand = arg('-e', '--expand', help="values to expand")
 arg_filter = arg('-f', '--filter', help="page property filter run '%(prog)s page-prop-filtering -h' for more help")

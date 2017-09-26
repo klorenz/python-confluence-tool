@@ -1,8 +1,9 @@
 import sys, re
-from .cli import command, arg, arg_format, arg_cql, arg_filter
-import pyaml
+from .cli import command, arg, arg_format, optarg_cql, arg_filter
+import pyaml, yaml
 
 @command('page-prop-get', optarg_cql, arg_filter, arg_format,
+    arg('--dict', action="store_true", help="transform page properties to dict (key page_id) before output"),
     arg('props', nargs="*", help="properties to retrieve"),
     )
 def cmd_page_prop_get(config):
@@ -24,7 +25,11 @@ def cmd_page_prop_get(config):
     confluence = config.getConfluenceAPI()
     first = True
 
+    if config.get('dict'):
+        results = {}
+
     for pp in confluence.getPagesWithProperties(**config.dict('cql', 'filter')):
+
         if config.get('format'):
             try:
 
@@ -40,17 +45,25 @@ def cmd_page_prop_get(config):
             except UnicodeEncodeError:
                 import traceback
                 sys.stderr.write("Error formatting %s:%s\n %s\n" % (pp.spacekey, pp.title, repr(dict(pp.getPageProperties()))))
-
         else:
-            if not first:
-                print("---")
-            else:
-                first = False
-
             result = pp.dict("id", "spacekey", "title")
             result['pageProperties'] = dict(pp.getPageProperties(*config.props))
 
-            pyaml.p(result)
+            if config.get('dict'):
+                results[result['id']] = result
+            else:
+                if not first:
+                    print("---")
+                else:
+                    first = False
+
+                result = pp.dict("id", "spacekey", "title")
+                result['pageProperties'] = dict(pp.getPageProperties(*config.props))
+
+                pyaml.p(result)
+
+    if config.get('dict'):
+        pyaml.p(results)
 
 
 @command('page-prop-set',
@@ -142,9 +155,14 @@ def cmd_page_prop_set(config):
             else:
                 files.append(prop)
 
+    if not config.get('cql') or config.get('cql') == '-':
+        files = ['-']
+        config['cql'] = None
+
     # handle filenames
     input = ''
     for filename in files:
+        print "file", filename
         if input != '':
             input += "---\n"
         if filename == '-':
@@ -156,7 +174,11 @@ def cmd_page_prop_set(config):
     documents = []
     # parse yaml multidocument
     if input:
-        documents = documents + yaml.safe_load_all(input)
+        for d in yaml.safe_load_all(input):
+            if isinstance(d, list):
+                documents += d
+            else:
+                documents.append(d)
 
     if len(propset):
         document = {
@@ -186,6 +208,11 @@ def cmd_page_prop_set(config):
         if config.get('parent'):
             if 'parent' not in doc:
                 doc['parent'] = config.get('parent')
+
+        if 'pagePropertiesEditor' not in doc:
+            if 'pageProperties' in doc:
+                doc['pagePropertiesEditor'] = doc['pageProperties']
+                del doc['pageProperties']
 
         doc_labels = doc.get('labels', doc.get('label', []))
         if not isinstance(doc_labels, list):

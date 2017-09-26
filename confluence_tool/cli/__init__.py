@@ -128,9 +128,11 @@ class Config:
 
 from .cli import command, arg
 
+confluence_tool_config = {}
 
 def main(argv=None):
-    def config_factory(args):
+
+    def config_factory(args, **kwargs):
         global confluence_tool_config
         confluence_tool_config = Config(**vars(args))
         return [confluence_tool_config], {}

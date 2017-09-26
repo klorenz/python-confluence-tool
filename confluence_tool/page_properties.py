@@ -24,6 +24,7 @@ def extract_data(elem, need_data=False):
     data['users'] = users = []
     data['refs']  = refs  = []
     data['links'] = links = []
+    data['dates'] = dates = []
     data['mailAddresses'] = mailAddresses = []
 
     # if is list
@@ -73,6 +74,12 @@ def extract_data(elem, need_data=False):
                     title = urllib.unquote(title).decode('utf8').replace(u"+", u" ")
                     _a.html("[{}:{}]".format(space, title))
                     refs.append(dict(space=space, title=title))
+
+        for t in d('time'):
+            _t = d(t)
+            _time = _t.attr('datetime')
+            dates.append(_time)
+            _t.html(_time)
 
         value = d(':root').text().strip()
 
@@ -131,11 +138,14 @@ class PagePropertiesEditor:
             self.userkeys[name] = self.confluence.getUser(name)['userKey']
         return self.userkeys[name]
 
-    ELEM = re.compile(r'''\[ (
+    ELEM = re.compile(r'''(?: \[ (
          ~(?P<user>[^\]]*?)
         | (?P<spacekey>\w+):(?P<title>[^\]]*?)
         | (?P<link>[^\]]*?)
-        ) \] ''', re.VERBOSE)
+        ) \]
+        | (?P<datetime>\d\d\d\d-\d\d-\d\d(?:\s\d\d:\d\d(?::\d\d)?)?)
+        )
+        ''', re.VERBOSE)
 
 
     def get_storage(self, key, value, templates=None):
@@ -171,6 +181,8 @@ class PagePropertiesEditor:
                 else:
                     caption, href = (d['link'],)*2
                 return render('link', caption=caption, href=href)
+            if d['datetime']:
+                return render('datetime', datetime=d['datetime'])
 
         value = self.ELEM.sub(replacer, value)
 
@@ -178,8 +190,10 @@ class PagePropertiesEditor:
 
 
     def edit_prop(self, key, data, action):
-        if 'replace' in action:
+        if not isinstance(action, dict):
+            return self.get_storage(key, action, {})
 
+        if 'replace' in action:
             data = action['replace']
 
         if 'remove' in action:

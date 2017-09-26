@@ -7,7 +7,7 @@ from .page_properties import PagePropertiesEditor
 
 import logging
 logger = logging.getLogger('confluence.api')
-logger.setLevel(logging.DEBUG)
+#logger.setLevel(logging.DEBUG)
 
 filter_func = filter
 
@@ -376,8 +376,8 @@ class ConfluenceAPI:
     PAGE_REF = re.compile(r'^:(.*)$')
     PAGE_ID = re.compile(r'^(\d+)$')
     PAGE_URI = re.compile(r'api/content/(\d+)$')
-    PARENT = re.compile(r'(.*)>')
-    ANCESTOR = re.compile(r'(.*)>>')
+    PARENT = re.compile(r'(.*)>$')
+    ANCESTOR = re.compile(r'(.*)>>$')
 
     def resolveCQL(self, ref):
         """resolve some string to CQL query
@@ -412,24 +412,24 @@ class ConfluenceAPI:
         if match(self.ANCESTOR):
             query = self.resolveCQL(*self.mob)
             p = self.getPage(query)
-            return "ancestor = {}".format(p.id)
+            return u"ancestor = {}".format(p.id)
 
         if match(self.PARENT):
             query = self.resolveCQL(*self.mob)
             p = self.getPage(query)
-            return "parent = {}".format(p.id)
+            return u"parent = {}".format(p.id)
 
         if match(self.SPACE_PAGE_REF):
-            return "space = {} AND title  = \"{}\"".format(*self.mob)
+            return u"space = {} AND title  = \"{}\"".format(*self.mob)
 
         if match(self.PAGE_REF):
-            return "title  = \"{}\"".format(*self.mob)
+            return u"title  = \"{}\"".format(*self.mob)
 
         if match(self.PAGE_ID):
-            return "ID  = {}".format(*self.mob)
+            return u"ID  = {}".format(*self.mob)
 
         if match(self.PAGE_URI):
-            return "ID  = {}".format(*self.mob)
+            return u"ID  = {}".format(*self.mob)
 
         return ref
 
@@ -488,6 +488,8 @@ class ConfluenceAPI:
     PAGE_PROP_FILTER = re.compile(r'^(?:(.*?)([!=])=(.*)|!(.*)|(.*)\?)$')
     def getPagesWithProperties(self, cql, filter=None, expand=[], **options):
         page_prop_filters = []
+
+        logger.info("cql: '%s', filter: %s", cql, filter)
 
         cql = self.resolveCQL(cql)
 
