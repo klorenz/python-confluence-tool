@@ -31,12 +31,7 @@ class Config:
             self.confluence_api = self.getConfluenceAPI()
             return self.confluence_api
 
-        try:
-            return self[name]
-        except KeyError:
-            pass
-
-        raise AttributeError(name)
+        return self.get(name)
 
     def dict(self, *args):
         result = {}
@@ -135,6 +130,10 @@ def main(argv=None):
     def config_factory(args, **kwargs):
         global confluence_tool_config
         confluence_tool_config = Config(**vars(args))
+        if args.debug:
+            log = logging.getLogger()
+            log.setLevel(logging.DEBUG)
+
         return [confluence_tool_config], {}
 
     try:

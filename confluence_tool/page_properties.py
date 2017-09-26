@@ -190,6 +190,7 @@ class PagePropertiesEditor:
 
 
     def edit_prop(self, key, data, action):
+
         if not isinstance(action, dict):
             return self.get_storage(key, action, {})
 
@@ -259,6 +260,7 @@ class PagePropertiesEditor:
 
         selector = "ac|structured-macro[ac|name=details] table tbody"
         for key, action in self.editor.items():
+            if action == 'delete': continue
             if key not in updated_keys:
                 html_data = self.edit_prop(key, '', action)
                 tr = "<tr><th>{}</th><td>{}</td></tr>".format(key, html_data)

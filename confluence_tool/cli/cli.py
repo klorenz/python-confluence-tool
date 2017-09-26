@@ -26,6 +26,8 @@ arg_expand = arg('-e', '--expand', help="values to expand")
 arg_filter = arg('-f', '--filter', help="page property filter run '%(prog)s page-prop-filtering -h' for more help")
 arg_write_format = arg('-w', '--write', help="format to write", choices=['yaml', 'json'], default="yaml")
 arg_format = arg('-F', '--format', help="format string for formatting the output.  May be either mustache or format string")
+arg_parent = arg('-p', '--parent', help="specify parent for a page, which might be created")
+arg_message = arg('-m', '--message', help="add a note or message")
 
 @command('cql')
 def cql_help(config):

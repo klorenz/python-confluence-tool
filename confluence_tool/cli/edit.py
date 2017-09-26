@@ -1,6 +1,6 @@
 import yaml, pyaml, sys
 from difflib import Differ
-from .cli import command, arg, optarg_cql, arg_filter
+from .cli import command, arg, optarg_cql, arg_filter, arg_parent
 #from .cli import arg
 
 @command('edit',
@@ -40,7 +40,7 @@ def cmd_edit(config):
     for page,content in confluence.editPages(config.cql, filter=args.filter, editor=editor):
         if not first:
             print "---"
-            first = True
+        first = False
 
         if args.show:
             p = page.dict('id', 'spacekey', 'title')
@@ -65,3 +65,25 @@ def cmd_edit(config):
 
             result = confluence.updatePage(**p)
             pyaml.p(result)
+
+@command('move', optarg_cql, arg_filter, arg_parent)
+def move(config):
+    confluence = config.getConfluenceAPI()
+    first = True
+
+    parent = confluence.getPage(confluence.resolveCQL(config.parent))
+    cql = confluence.resolveCQL(config.cql)
+    filter = config.filter
+
+    for page in confluence.getPages(cql, filter=filter, expand=['version']):
+        result = confluence.movePage(page, parent=parent)
+
+        if not first:
+            print "---"
+
+        pyaml.p(result)
+
+        first = False
+
+    if first:
+        print "could not find a page matching %s (%s)" % (cql, filter)

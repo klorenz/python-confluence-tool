@@ -162,7 +162,6 @@ def cmd_page_prop_set(config):
     # handle filenames
     input = ''
     for filename in files:
-        print "file", filename
         if input != '':
             input += "---\n"
         if filename == '-':
@@ -211,8 +210,15 @@ def cmd_page_prop_set(config):
 
         if 'pagePropertiesEditor' not in doc:
             if 'pageProperties' in doc:
-                doc['pagePropertiesEditor'] = doc['pageProperties']
+                doc['pagePropertiesEditor'] = {}
+
+                for k,v in doc['pageProperties']:
+                    doc['pagePropertiesEditor'][k] = {'replace': v}
+
                 del doc['pageProperties']
+
+        if 'page' not in doc and 'pages' not in doc:
+            doc['page'] = "%s:%s" % (doc['spacekey'], doc['title'])
 
         doc_labels = doc.get('labels', doc.get('label', []))
         if not isinstance(doc_labels, list):

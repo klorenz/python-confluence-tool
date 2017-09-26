@@ -220,6 +220,14 @@ class ConfluenceAPI:
 
         return Page(self, self.get( page_id, expand=expand), expand=expand)
 
+    def movePage(self, page, parent):
+        return self.get('/pages/movepage.action',
+            pageId = page.id,
+            spaceKey = parent['spacekey'],
+            targetTitle = parent['title'],
+            position = 'append'
+            )
+
     def getPages(self, cql, expand='', filter=None):
         logger.info("getPages cql=%s, expand=%s, filter=%s", cql, expand, filter )
         if not expand:
@@ -571,7 +579,6 @@ class ConfluenceAPI:
             data['ancestors'] = [{'id': self.getContentId(parent)}]
 
         return self.post('/rest/api/content', **data)
-
 
     def getChildren(self, page_id, type=None, expand=''):
         if not page_id.startswith('/rest'):
