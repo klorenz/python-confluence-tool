@@ -1,8 +1,8 @@
 import sys, re
-from .cli import command, arg, arg_format, optarg_cql, arg_filter
+from .cli import command, arg, arg_format, optarg_cql, arg_filter, arg_state
 import pyaml, yaml
 
-@command('page-prop-get', optarg_cql, arg_filter, arg_format,
+@command('page-prop-get', optarg_cql, arg_filter, arg_format, arg_state,
     arg('--dict', action="store_true", help="transform page properties to dict (key page_id) before output"),
     arg('props', nargs="*", help="properties to retrieve"),
     )
@@ -42,7 +42,7 @@ def cmd_page_prop_get(config):
     if config.get('dict'):
         results = {}
 
-    for pp in confluence.getPagesWithProperties(**config.dict('cql', 'filter')):
+    for pp in confluence.getPagesWithProperties(**config.dict('cql', 'filter', 'state')):
 
         if config.get('format'):
             try:

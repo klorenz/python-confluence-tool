@@ -24,6 +24,7 @@ optarg_cql = positional_optarg_cql = arg('cql', nargs="?", help="SPACE:title, pa
 
 arg_expand = arg('-e', '--expand', help="values to expand")
 arg_filter = arg('-f', '--filter', help="page property filter run '%(prog)s page-prop-filtering -h' for more help")
+arg_state = arg('-s', '--state', help="get all pages for corresponding state '%(prog)s cw-states -h' for more help")
 arg_write_format = arg('-w', '--write', help="format to write", choices=['yaml', 'json'], default="yaml")
 arg_format = arg('-F', '--format', help="format string for formatting the output.  May be either mustache or format string")
 arg_parent = arg('-p', '--parent', help="specify parent for a page, which might be created")
@@ -59,6 +60,20 @@ def cql_help(config):
     """
     command['cql'].print_help()
 
+@command('cw-states')
+def comala_workflow_states(config):
+    """How to filter page versions for specific state.
+
+    If you want to get the Approved version of all pages, a simple
+    `... and state = "Approved"` gives you only the pages currently in state
+    Approved, but will not return the Approved version of pages, which are
+    currently in a different state.
+
+    The filter "--state <STATENAME>" will provide you the last version of the
+    corresponding state.
+    """
+    command['cw-states'].print_help()
+
 @command('page-prop-filtering')
 def page_prop_filtering(config):
     """How to filter pages using page properties.
@@ -84,4 +99,4 @@ def page_prop_filtering(config):
 
     """
 
-    command['cql'].print_help()
+    command['page-prop-filtering'].print_help()

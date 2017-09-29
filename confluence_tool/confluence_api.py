@@ -206,7 +206,7 @@ class ConfluenceAPI:
     def listSpaces(self, expand=''):
         return self.get('/rest/api/space', expand=expand, limit=1000)['results']
 
-    def getPage(self, page_id, expand=''):
+    def getPage(self, page_id, expand='', status='current', version=None):
         if isinstance(expand, (list, set)):
             expand=",".join(expand)
 
@@ -218,7 +218,7 @@ class ConfluenceAPI:
                 assert len(pages) == 1
                 return pages[0]
 
-        return Page(self, self.get( page_id, expand=expand), expand=expand)
+        return Page(self, self.get( page_id, expand=expand, status=status, version=version), expand=expand)
 
     def movePage(self, page, parent):
         return self.get('/pages/movepage.action',
@@ -228,13 +228,46 @@ class ConfluenceAPI:
             position = 'append'
             )
 
-    def getPages(self, cql, expand='', filter=None):
-        logger.info("getPages cql=%s, expand=%s, filter=%s", cql, expand, filter )
+    def getPages(self, cql, expand=[], filter=None, state=None):
+        """
+        state is comala workflow state here
+        """
+        logger.info("getPages cql=%s, expand=%s, filter=%s, state=%s", cql, expand, filter, state )
         if not expand:
             expand = []
 
-        if filter is not None:
-            for page in self.getPagesWithProperties(cql, filter=filter, expand=expand):
+        if state is not None:
+            _cql = '(%s) and state = "%s"' % (cql, state)
+            for page in self.getPages(_cql, expand, filter):
+                yield page
+
+            _cql = '(%s) and state != "%s"' % (cql, state)
+            for page in self.getPages(_cql):
+                result = self.get("/rest/adhocworkflows/1/workflow/%s/states" % page.id)
+
+                logger.debug("result: %s", result)
+
+                for _state in reversed(result['states']):
+
+                    if _state[u'name'] != state:
+                        continue
+
+                    version = _state['contentVersion']
+                    logger.debug("found state version: %s", version)
+
+                    _expand = expand
+                    if filter is not None:
+                        _expand.append('body.view')
+
+                    page = self.getPage(page.id, expand=_expand, status='historical', version=version)
+                    logger.debug("page: %s", page)
+                    for p in self.getPagesWithProperties(page, filter=filter):
+                        yield p
+
+                    break
+
+        elif filter is not None:
+            for page in self.getPagesWithProperties(cql, filter=filter, expand=expand, version=version):
                 yield page
 
         else:
@@ -301,7 +334,7 @@ class ConfluenceAPI:
             body    = body
         )
 
-    def editPage(self, cql, editor, filter=None):
+    def editPages(self, cql, editor, filter=None):
         """
         Editor works with mustache templates and jQuery assingments.
 
@@ -327,9 +360,10 @@ class ConfluenceAPI:
               * `data` - data to be applied to template
         """
 
-        editor = StorageEditor(editor)
+        if not isinstance(editor, StorageEditor):
+            editor = StorageEditor(self, **editor)
 
-        for page in self.getPages(cql, filter=filter):
+        for page in self.getPages(cql, filter=filter, expand=['body.storage']):
             yield page, editor.edit(page)
 
 
@@ -494,12 +528,18 @@ class ConfluenceAPI:
 
 
     PAGE_PROP_FILTER = re.compile(r'^(?:(.*?)([!=])=(.*)|!(.*)|(.*)\?)$')
-    def getPagesWithProperties(self, cql, filter=None, expand=[], **options):
+    def getPagesWithProperties(self, cql, filter=None, expand=[], state=None, **options):
+        """Either pass CQL or a page having body.view expanded.
+        """
         page_prop_filters = []
 
         logger.info("cql: '%s', filter: %s", cql, filter)
 
-        cql = self.resolveCQL(cql)
+        if isinstance(cql, Page):
+            pages = [ cql ]
+        else:
+            cql = self.resolveCQL(cql)
+            pages = self.getPages(cql, state=state, expand=expand + ['body.view'])
 
         if filter is not None:
             if not isinstance(filter, list):
@@ -549,7 +589,8 @@ class ConfluenceAPI:
             logger.info("filterer result = %s", result)
             return result
 
-        for page in filter_func(page_prop_filterer, self.getPages(cql, expand=expand + ['body.view'])):
+
+        for page in filter_func(page_prop_filterer, pages):
             yield page
 
     def getContentId(self, page):

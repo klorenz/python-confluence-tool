@@ -7,6 +7,7 @@ import sys
     arg_expand,
     arg_write_format,
     arg_format,
+    arg_state,
     mutually_exclusive(
         arg('--storage', action="store_true", help="convenience for: -e 'body.storage' -F '{body[storage][value]}'"),
         arg('--html', action="store_true", help="convenience for: -e 'body.view' -F '{body[view][value]}'"),
@@ -93,7 +94,7 @@ def show(config):
             config['field'] = ['id', 'spacekey', 'title']
 
     results = []
-    kwargs = config.dict('cql', 'expand', 'filter')
+    kwargs = config.dict('cql', 'expand', 'filter', 'state')
     kwargs['cql'] = config.confluence_api.resolveCQL(kwargs['cql'])
 
     for page in config.confluence_api.getPages(**kwargs):

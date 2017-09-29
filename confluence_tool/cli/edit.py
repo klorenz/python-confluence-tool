@@ -1,7 +1,8 @@
 import yaml, pyaml, sys
 from difflib import Differ
 from .cli import command, arg, optarg_cql, arg_filter, arg_parent
-#from .cli import arg
+from ..storage_editor import StorageEditor
+
 
 @command('edit',
     optarg_cql,
@@ -23,7 +24,7 @@ def cmd_edit(config):
     first = True
 
     if not config['file']:
-        editor_config = yaml.safe_load(sys.stdout)
+        editor_config = yaml.safe_load(sys.stdin)
     else:
         with open(fn, 'r') as f:
             editor_config = yaml.safe_load(f)
@@ -35,19 +36,19 @@ def cmd_edit(config):
     if config['cql']:
         cql = config['cql']
 
-    editor = StorageEditor(confluence, **editor_config)
+    #editor = StorageEditor(confluence, **editor_config)
 
-    for page,content in confluence.editPages(config.cql, filter=args.filter, editor=editor):
+    for page,content in confluence.editPages(cql, filter=config.filter, editor=editor_config):
         if not first:
             print "---"
         first = False
 
-        if args.show:
+        if config.show:
             p = page.dict('id', 'spacekey', 'title')
             p['content'] = content
             pyaml.p(p)
 
-        elif args.diff:
+        elif config.diff:
             p = page.dict('id', 'spacekey', 'title')
 
             old = page['body']['storage']['value'].splitlines(1)
@@ -65,6 +66,7 @@ def cmd_edit(config):
 
             result = confluence.updatePage(**p)
             pyaml.p(result)
+
 
 @command('move', optarg_cql, arg_filter, arg_parent)
 def move(config):

@@ -36,7 +36,7 @@ class Config:
     def dict(self, *args):
         result = {}
         for k in args:
-            result[k] = self[k]
+            result[k] = self.get(k)
         return result
 
     def __getitem__(self, name):

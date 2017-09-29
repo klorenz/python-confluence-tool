@@ -3,8 +3,12 @@ from pystache import Renderer
 from os.path import dirname
 from .myquery import MyQuery
 from .util import get_list_data
+from .page import Page
 
+from lxml.etree import XMLSyntaxError
 
+import logging
+log = logging.getLogger('confluence-tool.storage_editor')
 
 class StorageEditor:
 
@@ -21,10 +25,28 @@ class StorageEditor:
 
 
     def edit(self, content):
-        if hasattr(content, 'get') and content.get('body'):
-            content = content['body']['storage']['value']
+        if isinstance(content, Page):
+            page = content
+        else:
+            page = None
 
-        Q = self.begin_edit(content)
+        if isinstance(content, (dict, Page)):
+            if content.get('body'):
+                content = content['body']['storage']['value']
+
+        try:
+            Q = self.begin_edit(content)
+
+        except XMLSyntaxError as e:
+            if page is None: raise
+
+            log.debug("error: %s", e)
+
+            if re.match(r"Entity '.*?' not defined", str(e)):
+                log.debug('matched')
+                raise StandardError("There are double-escaped HTML entities in page %(spacekey)s:%(title)s" % page)
+            else:
+                raise
 
         for action in self.actions:
             if 'data' in action:
@@ -39,7 +61,12 @@ class StorageEditor:
                 if content['type'] == 'wiki':
                     content = self.confluence.convertWikiToStorage(content)
 
-            getattr(Q(action['select']), action.get('action', 'html'))(content)
+            method = action.get('action', 'html')
+
+            log.debug("content for %s: %s", method, content)
+
+            getattr(Q(action['select']), )(content)
+
 
         return self.end_edit()
 
@@ -52,8 +79,10 @@ class StorageEditor:
 
         return self.pyquery
 
+
     FIRST_OPENING_TAG = re.compile(r'^<root[^>]*>')
     LAST_CLOSING_TAG  = re.compile(r'</root>$')
+
     def end_edit(self, pyquery=None):
         if pyquery is None:
             pyquery = self.pyquery
