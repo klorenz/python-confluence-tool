@@ -228,13 +228,16 @@ class ConfluenceAPI:
             position = 'append'
             )
 
-    def getPages(self, cql, expand=[], filter=None, state=None):
+    def getPages(self, cql=None, expand=[], filter=None, state=None, pages=None):
         """
         state is comala workflow state here
         """
         logger.info("getPages cql=%s, expand=%s, filter=%s, state=%s", cql, expand, filter, state )
         if not expand:
             expand = []
+
+        if pages is not None:
+            cql = self.resolveCQL(pages)
 
         if state is not None:
             _cql = '(%s) and state = "%s"' % (cql, state)
@@ -284,7 +287,7 @@ class ConfluenceAPI:
 
         Returns storage representation.
         """
-        return self.post_json('/rest/api/contentbody/convert/storage',
+        return self.post('/rest/api/contentbody/convert/storage',
             value=content, representation='wiki')['value']
 
     def getLabels(self, page_id):
@@ -363,7 +366,7 @@ class ConfluenceAPI:
         if not isinstance(editor, StorageEditor):
             editor = StorageEditor(self, **editor)
 
-        for page in self.getPages(cql, filter=filter, expand=['body.storage']):
+        for page in self.getPages(cql, filter=filter, expand=['body.storage', 'version']):
             yield page, editor.edit(page)
 
 
@@ -474,6 +477,27 @@ class ConfluenceAPI:
             return u"ID  = {}".format(*self.mob)
 
         return ref
+
+    def cwInfo(self, page, expand=[]):
+        """return comala workflow information about current page"""
+
+        if isinstance(expand, list):
+            expand = ','.join(expand)
+        return self.get('/rest/cw/1/content/%s' % page.id, expand=expand)
+
+    def cwApprove(self, page, name, note=None):
+        """approve a page"""
+        return self.post(
+            '/rest/adhocworkflows/latest/approval/%s/approve' % page.id,
+            name = name,
+            note = note)
+
+    def cwReject(self, page, name, note=None):
+        """approve a page"""
+        return self.post(
+            '/rest/adhocworkflows/latest/approval/%s/reject' % page.id,
+            name = name,
+            note = note)
 
 
     def setPageProperties(self, document):

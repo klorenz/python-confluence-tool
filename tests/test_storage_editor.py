@@ -29,3 +29,12 @@ def test_storage_editor_replace_content_from_template():
         """)
     )
     assert e.edit("<div></div>") == "<div><ul><li>first</li><li>second</li></ul></div>"
+
+def test_storage_editor_remove_item():
+    e = StorageEditor(
+            actions = dedent("""
+                - select: p:last-child
+                  action: remove
+            """)
+        )
+    assert e.edit("<p>first</p><p>second</p>") == "<p>first</p>"

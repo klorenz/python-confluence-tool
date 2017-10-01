@@ -43,16 +43,21 @@ def cmd_edit(config):
             print "---"
         first = False
 
+        from html5print import HTMLBeautifier
+        b = HTMLBeautifier.beautify
+
         if config.show:
             p = page.dict('id', 'spacekey', 'title')
-            p['content'] = content
+
+            p['content'] = b(content, 2)
             pyaml.p(p)
 
         elif config.diff:
             p = page.dict('id', 'spacekey', 'title')
 
-            old = page['body']['storage']['value'].splitlines(1)
-            new = content.splitlines(1)
+            old = b(page['body']['storage']['value']).splitlines(1)
+            new = b(content).splitlines(1)
+
             d = Differ()
             result = list(d.compare(old, new))
 
@@ -60,9 +65,9 @@ def cmd_edit(config):
             pyaml.p(p)
 
         else:
-            p = page.dict('id', 'spacekey', 'title')
+            p = page.dict('id', 'title', 'version')
             p['storage'] = content
-            version = p['version']['number']
+            p['version'] = int(page['version']['number'])+1
 
             result = confluence.updatePage(**p)
             pyaml.p(result)

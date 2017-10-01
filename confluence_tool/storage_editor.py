@@ -4,6 +4,7 @@ from os.path import dirname
 from .myquery import MyQuery
 from .util import get_list_data
 from .page import Page
+from lxml import etree
 
 from lxml.etree import XMLSyntaxError
 
@@ -55,9 +56,9 @@ class StorageEditor:
                 else:
                     content = self.renderer.render(action['content'], action['data'])
             else:
-                content = action['content']
+                content = action.get('content')
 
-            if 'type' in content:
+            if content is not None and 'type' in content:
                 if content['type'] == 'wiki':
                     content = self.confluence.convertWikiToStorage(content)
 
@@ -65,8 +66,17 @@ class StorageEditor:
 
             log.debug("content for %s: %s", method, content)
 
-            getattr(Q(action['select']), )(content)
+            selection = Q(action['select'])
+            log.debug("selection: %s", selection)
 
+            #import rpdb2 ; rpdb2.start_embedded_debugger('foo')
+
+            if content is None:
+                getattr(selection, method)()
+            else:
+                getattr(selection, method)(content)
+
+            log.debug("edited: %s", str(Q))
 
         return self.end_edit()
 
@@ -87,7 +97,11 @@ class StorageEditor:
         if pyquery is None:
             pyquery = self.pyquery
 
-        data = str(pyquery)
+        #import rpdb2 ; rpdb2.start_embedded_debugger('foo')
+
+        root = pyquery.root.getroot()
+
+        data = str(pyquery.__class__([x for x in root]))
         return data
 
 

@@ -252,7 +252,8 @@ def cmd_page_prop_set(config):
             doc_labels = [ doc_labels ]
 
         for result in confluence.setPageProperties(doc):
-            print "updated {}".format(result['result']['id'], )
+            print "updated {spacekey}:{title} ({id})".format(**(result['page'].dict('spacekey', 'title', 'id')))
+
             _labels = labels+doc_labels
             if len(_labels):
                 confluence.addLabels(result['result']['id'], _labels)
