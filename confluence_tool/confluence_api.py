@@ -228,7 +228,7 @@ class ConfluenceAPI:
             position = 'append'
             )
 
-    def getPages(self, cql=None, expand=[], filter=None, state=None, pages=None):
+    def getPages(self, cql=None, expand=[], filter=None, state=None, pages=None, version=None):
         """
         state is comala workflow state here
         """

@@ -100,3 +100,31 @@ def page_prop_filtering(config):
     """
 
     command['page-prop-filtering'].print_help()
+
+import pyaml
+
+@command('get',
+    arg('url', help="url start with / or /rest/ will be prepended"),
+    args('params', nargs="*", help="parameters to pass to url"))
+def get_method(config):
+    """
+    Get from a rest URL
+
+    """
+
+    PARAM = re.compile(r'(.*?)=(.*)')
+
+    params = {}
+
+    for item in config.get('params'):
+        m = PARAM.search(item)
+        if m:
+            (name, value) = m.groups()
+            params[name] = value
+
+    if not url.startswith('/'):
+        url = '/rest/'+url
+
+    confluence = config.getConfluenceAPI()
+    result = confluence.get(url, **params)
+    pyaml.p(result)
