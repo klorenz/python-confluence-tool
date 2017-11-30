@@ -101,11 +101,14 @@ def page_prop_filtering(config):
 
     command['page-prop-filtering'].print_help()
 
-import pyaml
+import pyaml, re, sys
 
 @command('get',
     arg('url', help="url start with / or /rest/ will be prepended"),
-    args('params', nargs="*", help="parameters to pass to url"))
+    arg('--stream', help="get raw data", default=False, action="store_true"),
+    arg('--progress', help="write out progress", default=False, action="store_true"),
+    arg('--output-file', '-o', help="output file"),
+    arg('params', nargs="*", help="parameters to pass to url"))
 def get_method(config):
     """
     Get from a rest URL
@@ -122,9 +125,30 @@ def get_method(config):
             (name, value) = m.groups()
             params[name] = value
 
-    if not url.startswith('/'):
-        url = '/rest/'+url
+    url = config.get('url')
 
-    confluence = config.getConfluenceAPI()
-    result = confluence.get(url, **params)
-    pyaml.p(result)
+    output_file = config.get('output_file')
+    if output_file and output_file != '-':
+        outstream = open(output_file, 'wb')
+    else:
+        outstream = sys.stdout
+
+    progress = config.get('progress')
+
+    if 1:
+        if not url.startswith('/'):
+            url = '/rest/'+url
+
+        confluence = config.getConfluenceAPI()
+
+        result = confluence.get(url, stream=config.get('stream'), **params)
+        if config.get('stream'):
+            _len = 0
+            for data in result.iter_content(chunk_size=1024*1024):
+                outstream.write(data)
+
+                _len += len(data)
+                if progress:
+                    sys.stderr.write("\r%s bytes" % _len)
+        else:
+            pyaml.p(result)

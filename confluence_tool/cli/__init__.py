@@ -154,7 +154,7 @@ def main(argv=None):
             traceback.print_exc()
             return 1
         else:
-            print "%s" % e
+            print (u"%s" % e).encode('utf-8')
             return 1
 
 import edit

@@ -61,7 +61,7 @@ class ConfluenceAPI:
 
         raise AttributeError(name)
 
-    def request(self, method, endpoint, params=None, **kwargs):
+    def request(self, method, endpoint, params=None, stream=None, **kwargs):
         url = self.config['baseurl'] + endpoint
         if params is None:
             params = {}
@@ -71,8 +71,9 @@ class ConfluenceAPI:
             params.update(kwargs)
 
         try:
+
             if method == 'GET':
-                response = self.session.request(method, url, params=params, headers=headers)
+                response = self.session.get(url, params=params, headers=headers, stream=stream)
             else:
                 headers.update({'Content-Type': 'application/json', 'Accept':'application/json'})
                 response = self.session.request(method, url, data=json.dumps(params), headers=headers)
@@ -90,8 +91,11 @@ class ConfluenceAPI:
 
             raise ConfluenceError(response.text)
 
-        if response.text:
-            return response.json()
+        if not stream:
+            if response.text:
+                return response.json()
+        else:
+            return response
 
         return {}
 
@@ -653,137 +657,3 @@ class ConfluenceAPI:
         else:
             url = page_id + "/child/"+type
         return self.get(url, expand=expand)['results']
-
-
-if 0:
-  class ConfluenceAPI:
-    def __init__(self, url, username=None, password=None, version=None):
-        '''Create ConfluenceAPI object
-
-        :param url:
-            Base URL of Confluence Server.
-        :param username:
-            Optional Username for connecting
-        :param password:
-            Optional Password for connecting
-        :param version:
-            Optional Version of the API (not used for now)
-
-        If you do not pass username (and password), it is checked, if in URL,
-        else it is tried to read it from netrc(5) facility.
-        '''
-
-        parsed_url = urlparse(url)
-        if username is None:
-            if parsed_url.username:
-                self.username = parsed_url.username
-                self.password = parsed_url.password
-            else:
-                auth_data = netrc.netrc().authenticators(parsed_url.hostname)
-                self.username = auth_data[0]
-                self.password = auth_data[2]
-
-        urldata = dict(scheme=parsed_url.scheme, netloc=parsed_url.netloc)
-        self.url = "{scheme}://{netloc}".format(urldata)
-
-    def __getattr__(self, name):
-        '''autofill some attributes
-
-        :param name:
-            - `session` get a HTTP session variable
-        '''
-
-        if name == 'session':
-            self.session = requests.Session()
-            self.session.auth = (self.username, self.password)
-            return self.session
-
-        raise AttributeError(name)
-
-    def request(self, method, path, params={}, files={}, data=None, json=None):
-        '''do an HTTP request
-
-        :param method:
-            method to do with request
-        :param path:
-            path to be appended to base URL for request
-        :param params:
-            parameters to be sent with request (depending on method)
-
-        '''
-
-        # compose URL
-        url = self.url + path
-
-        # remove params with None value
-        for k in params.keys():
-            if params[k] is None:
-                del params[k]
-
-        # setup headers
-        headers = None
-        if len(files):
-            headers = {"X-Atlassian-Token" : "no-check"}
-
-        # if JSON present, send JSON body
-        if json:
-            if headers is None:
-                headers = {}
-            headers['Content-Type'] = "application/json"
-            data = serialize(json)
-            logger.info("json Data: %s", data)
-
-        try:
-            response = self.session.request(method, url, params=params,
-                files=files, headers=headers, data=data)
-        except Exception as e:
-            logger.info("error in request %s, %s", url, params, exc_info=1)
-            raise
-
-        if response.status_code >= 400:
-            self.session.close()
-            error = ""
-            try:
-                text = json.loads(response.text)
-                if u'errorMessage' in text:
-                    error = text[u'errorMessage']
-                elif u'errorMessages' in text:
-                    error = "\n".join([error] + text[u'errorMessages'])
-                elif 'message' in text:
-                    error = text['message']
-
-            except:
-                error = response.text
-
-            raise RuntimeError("Confluence API returned %d: %s\nRequested URL: %s\n%s" % (response.status_code, response.reason, url, error))
-
-        if response.text:
-            return response.json()
-        else:
-            return response
-
-    def get(self, resturl, files = {}, **params):
-        return self.request('get', resturl, params, files)
-
-    def post(self, resturl, files={}, **params):
-        return self.request('post', resturl, params, files)
-
-    def post_json(self, resturl, files={}, **params):
-        return self.request('post', resturl, files, json=params)
-
-    def put(self, resturl, files={}, **params):
-        return self.request('put', resturl, params, files)
-
-    def put_json(self, resturl, files={}, **params):
-        return self.request('put', resturl, files, json=params)
-
-    def delete(self, resturl, files={}, **params):
-        return self.request('delete', resturl, params, files)
-
-    # Spaces
-    # ------------------------------------------------------
-
-    def createSpace(self, key, name, type='global', description=None, **kwargs):
-        params = kwargs.copy()
-
-        params.update(key=key, name=name, type=type)
