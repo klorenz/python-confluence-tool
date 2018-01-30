@@ -22,13 +22,14 @@ command = CommandDecorator(
 arg_cql = positional_arg_cql = arg('cql', help="SPACE:title, pageID or CQL, run '%(prog)s cql -h' for more help")
 optarg_cql = positional_optarg_cql = arg('cql', nargs="?", help="SPACE:title, pageID or CQL, '%(prog)s cql -h' for more help")
 
-arg_expand = arg('-e', '--expand', help="values to expand")
-arg_filter = arg('-f', '--filter', help="page property filter run '%(prog)s page-prop-filtering -h' for more help")
-arg_state = arg('-s', '--state', help="get all pages for corresponding state '%(prog)s cw-states -h' for more help")
+arg_expand  = arg('-e', '--expand', help="values to expand")
+arg_filter  = arg('-f', '--filter', help="page property filter run '%(prog)s page-prop-filtering -h' for more help")
+arg_state   = arg('-s', '--state', help="get all pages for corresponding state '%(prog)s cw-states -h' for more help")
 arg_write_format = arg('-w', '--write', help="format to write", choices=['yaml', 'json'], default="yaml")
-arg_format = arg('-F', '--format', help="format string for formatting the output.  May be either mustache or format string")
-arg_parent = arg('-p', '--parent', help="specify parent for a page, which might be created")
+arg_format  = arg('-F', '--format', help="format string for formatting the output.  May be either mustache or format string")
+arg_parent  = arg('-p', '--parent', help="specify parent for a page, which might be created")
 arg_message = arg('-m', '--message', help="add a note or message")
+arg_label   = arg('-l', '--label', action="append", help="add these labels to the page")
 
 @command('cql')
 def cql_help(config):

@@ -1,4 +1,5 @@
 from .cli import command, arg
+import pyaml
 
 @command('config',
     arg('-p', '--show-password', action="store_true", help="unless specified, password will not be shown")
