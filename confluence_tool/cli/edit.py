@@ -3,9 +3,9 @@ from difflib import Differ
 from .cli import command, arg, optarg_cql, arg_filter, arg_parent, arg_label
 from ..storage_editor import StorageEditor
 
-@command('create', arg_parent, arg_label, arg_space, arg("pagespec")
-)
-def cmd_create(config):
+# @command('create', arg_parent, arg_label, arg_space, arg("pagespec")
+# )
+# def cmd_create(config):
 
 
 @command('edit',
