@@ -89,7 +89,7 @@ class Config:
 
         return result
 
-    def setConfig(self):
+    def setConfig(self, update_password=False):
         config_name = self.args.get('config', 'default')
 
         try:
@@ -99,6 +99,12 @@ class Config:
 
         baseurl  = self.args.get('baseurl')
         username = self.args.get('username')
+
+        if config_name in config:
+            old_baseurl = config[config_name].get('baseurl')
+            old_username = config[config_name].get('username')
+            if old_baseurl is not None and old_baseurl != baseurl or old_username != username:
+                keyring.delete_password("confluence-tool "+old_baseurl, old_username)
 
         config[config_name] = cfg = dict(
             baseurl  = baseurl,
@@ -117,6 +123,23 @@ class Config:
         self.config = config
 
         self.writeConfig()
+
+    def rmConfig(self):
+        config_name = self.args.get('config', 'default')
+
+        try:
+            config = self.config or {}
+        except ConfigFileMissing:
+            config = {}
+
+        if config_name not in config:
+            return
+
+        keyring.delete_password('confluence-tool '+baseurl, username)
+
+        del config[config_name]
+        self.writeConfig()
+
 
     def getConfluenceAPI(self):
         return ConfluenceAPI(self.getConfig())
@@ -163,3 +186,4 @@ import show
 import config
 import labels
 import comala_workflow
+import space

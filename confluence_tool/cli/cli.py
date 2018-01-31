@@ -25,13 +25,19 @@ optarg_cql = positional_optarg_cql = arg('cql', nargs="?", help="SPACE:title, pa
 arg_expand  = arg('-e', '--expand', help="values to expand")
 arg_filter  = arg('-f', '--filter', help="page property filter run '%(prog)s page-prop-filtering -h' for more help")
 arg_state   = arg('-s', '--state', help="get all pages for corresponding state '%(prog)s cw-states -h' for more help")
-arg_write_format = arg('-w', '--write', help="format to write", choices=['yaml', 'json'], default="yaml")
+arg_status   = arg('-S', '--status', help="get all pages for corresponding status")
+arg_write_format = arg('-w', '--write', help="format to write", choices=['format', 'yaml', 'json'], default="yaml")
 arg_format  = arg('-F', '--format', help="format string for formatting the output.  May be either mustache or format string")
 arg_parent  = arg('-p', '--parent', help="specify parent for a page, which might be created")
 arg_message = arg('-m', '--message', help="add a note or message")
-arg_label   = arg('-l', '--label', action="append", help="add these labels to the page")
+arg_add_label = arg('-l', '--label', action="append", help="add these labels to the page")
+arg_label   = arg('-l', '--label', help="with label(s)")
+arg_field   = arg('field', nargs="*", help='field to dump')
 
-@command('cql')
+arg_parent = arg('-p', '--parent', help="specify parent for a page, which might be created")
+#def arg_parent(parser, namespace, values, option_string=None):
+
+@command('help-cql')
 def cql_help(config):
     """How to query pages.
 
@@ -61,7 +67,7 @@ def cql_help(config):
     """
     command['cql'].print_help()
 
-@command('cw-states')
+@command('help-cw-states')
 def comala_workflow_states(config):
     """How to filter page versions for specific state.
 
@@ -75,7 +81,7 @@ def comala_workflow_states(config):
     """
     command['cw-states'].print_help()
 
-@command('page-prop-filtering')
+@command('help-page-prop-filtering')
 def page_prop_filtering(config):
     """How to filter pages using page properties.
 
@@ -103,6 +109,11 @@ def page_prop_filtering(config):
     command['page-prop-filtering'].print_help()
 
 import pyaml, re, sys
+
+
+
+
+
 
 @command('get',
     arg('url', help="url start with / or /rest/ will be prepended"),

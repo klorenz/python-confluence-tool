@@ -1,6 +1,6 @@
 import yaml, pyaml, sys
 from difflib import Differ
-from .cli import command, arg, optarg_cql, arg_filter, arg_parent, arg_label
+from .cli import command, arg, optarg_cql, arg_filter, arg_parent, arg_add_label
 from ..storage_editor import StorageEditor
 
 # @command('create', arg_parent, arg_label, arg_space, arg("pagespec")
@@ -12,7 +12,7 @@ from ..storage_editor import StorageEditor
     optarg_cql,
     arg_filter,
     arg_parent,
-    arg_label,
+    arg_add_label,
     arg('file', nargs="?", help="file to read data from"),
     # need arg_group
     arg('--show', action="store_true", help="show new content"),

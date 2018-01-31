@@ -13,6 +13,7 @@ import sys
         arg('--html', action="store_true", help="convenience for: -e 'body.view' -F '{body[view][value]}'"),
         arg('--ls', action="store_true", help="convenience for: -F '{id} {spacekey} {title}'"),
     ),
+    arg('-B', '--beautify', action="store_true", help="beautify body.storage.value or body.view.value, if present"),
 #    arg('-d', '--data', help="filename containing data selector in YAML or JSON format"),
     arg('field', nargs="*", help='field to dump')
 )
@@ -98,7 +99,15 @@ def show(config):
     kwargs['cql'] = config.confluence_api.resolveCQL(kwargs['cql'])
 
     for page in config.confluence_api.getPages(**kwargs):
-        results.append(page.dict(*config['field']))
+        rec = page.dict(*config['field'])
+        if config.get('beautify'):
+            from html5print import HTMLBeautifier
+            if rec.get('body', {}).get('storage', {}).get('value'):
+                rec['body']['storage']['value'] = HTMLBeautifier.beautify(rec['body']['storage']['value'], 4)
+            if rec.get('body', {}).get('view', {}).get('value'):
+                rec['body']['view']['value'] = HTMLBeautifier.beautify(rec['body']['view']['value'], 4)
+
+        results.append(rec)
 
     if config.get('format'):
         for result in results:

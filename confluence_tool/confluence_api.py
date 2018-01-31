@@ -204,11 +204,11 @@ class ConfluenceAPI:
                    if title not in source_subpage:
                        self.deletePage(page['id'])
 
-    def getSpace(self, space_key, expand=''):
-        return self.get( '/rest/api/space/%s' % space_key, expand=expand)
+    def getSpace(self, space_key, expand='', label=None, status=None):
+        return self.get( '/rest/api/space/%s' % space_key, expand=expand, label=label, status=status)
 
-    def listSpaces(self, expand=''):
-        return self.get('/rest/api/space', expand=expand, limit=1000)['results']
+    def listSpaces(self, expand='', status=None, type=None, label=None):
+        return self.iterate('get', '/rest/api/space', expand=expand, status=status, type=type, label=label)
 
     def getPage(self, page_id, expand='', status='current', version=None):
         if isinstance(expand, (list, set)):
@@ -278,7 +278,7 @@ class ConfluenceAPI:
                 yield page
 
         else:
-            for page in self.iterate(cql=cql, expand=expand):
+            for page in self.iterate('findPages', cql=cql, expand=expand):
                 yield Page(self, page, expand)
 
     def getSpaceHomePage(self, space_key):
@@ -387,7 +387,7 @@ class ConfluenceAPI:
             expand = ','.join(list(expand))
         return self.get('/rest/api/content/search', cql = cql, expand=expand, limit=limit, start=start)
 
-    def iterate(self, *args, **kwargs):
+    def iterate(self, method, *args, **kwargs):
         if 'start' not in kwargs:
             kwargs['start'] = 0
         if 'limit' not in kwargs:
@@ -403,11 +403,11 @@ class ConfluenceAPI:
         while True:
             kwargs['start'] = start
             kwargs['limit'] = limit
-            result = self.findPages(*args, **kwargs)
+            result = getattr(self, method)(*args, **kwargs)
 
-            for page in result['results']:
-                logger.info("page_id: %s", page['id'])
-                yield page
+            for item in result['results']:
+                logger.info("item_id: %s", item['id'])
+                yield item
                 maxResults -= 1
                 if maxResults <= 0:
                     break
