@@ -122,6 +122,7 @@ def cmd_page_prop_set(config):
     A document may have following values:
 
     - `page` - specify a page to be changed
+    - `parent` - a page to be parent of a new page
     - `templates` - dictionary of templates with following names:
       - `user` - to render user names.  Gets userkey
       - `page` - to render page Gets spacekey, title
@@ -130,7 +131,21 @@ def cmd_page_prop_set(config):
       - `PROPKEY-TYPE`, where PROPKEY is valid propkey and TYPE is one of the
         above.  This will be used as templates only for that key
     - `pages` - list of documents like this
-    - `pagePropertiesEditor` - Define how to change page properties
+    - `pagePropertiesEditor` - Define how to change page properties.  This is a
+      dictionary with PROPKEY and values define actions.
+
+      An action can be one of the following:
+        - `delete` - delete the prop
+        - dictionary with one or more of following key/value pairs:
+            - `replace` - replace prop's value with given value
+            - `add` - add given value/s to prop
+            - `remove` - remove given value/s from prop if present
+    - `pagePropertiesOrder` - (or short `order`) Define order of page
+      properties, in case they are not yet part of document.
+
+    Instead of `pagePropertiesEditor`, you can also specify pageProperties.
+    This may be either a dictionary specifying props and values or it may be
+    a list of such dictionaries, directly specifying `pagePropertiesOrder`.
 
     Examples:
 
@@ -144,6 +159,8 @@ def cmd_page_prop_set(config):
        "SpaceName:Some Title" PageProp:='Content'`
 
        Additionally adds label "label1" and "label2"
+
+     ct page-prop-set -p "SpaceName:Parent Title"
     """
 
     confluence = config.getConfluenceAPI()
@@ -239,8 +256,16 @@ def cmd_page_prop_set(config):
             if 'pageProperties' in doc:
                 doc['pagePropertiesEditor'] = {}
 
-                for k,v in doc['pageProperties']:
-                    doc['pagePropertiesEditor'][k] = {'replace': v}
+                if isinstance(doc['pageProperties'], list):
+                    _order = []
+                    for e in doc['pageProperties']:
+                        for k,v in e:
+                            _order.append(k)
+                            doc['pagePropertiesEditor'][k] = {'replace': v}
+                    doc['pagePropertiesOrder'] = _order
+                else:
+                    for k,v in doc['pageProperties']:
+                        doc['pagePropertiesEditor'][k] = {'replace': v}
 
                 del doc['pageProperties']
 

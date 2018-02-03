@@ -26,10 +26,10 @@ def represent_stringish(dumper, data):
     if not style:
         style = 'plain'
 
-        if '\n' not in data and '@' in data or '{' in data or '}' in data:
+        if '\n' not in data and ('@' in data or '{' in data or '}' in data):
             style = "'"
 
-        elif '\n' in data or not data or data == '-' or data[0] in '!&*[':
+        elif '\n' in data or not data or data == '-' or data[0] in '!&*[?':
             if 0:
                 style = 'literal'
                 if '\n' in data[:-1]:

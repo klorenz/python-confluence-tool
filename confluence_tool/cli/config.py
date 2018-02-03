@@ -13,7 +13,7 @@ def config(config):
 
     """
 
-    if config.get('update'):
+    if config.get('update') or config.get('update_password'):
         config.setConfig(config.get('update_password'))
         return
 

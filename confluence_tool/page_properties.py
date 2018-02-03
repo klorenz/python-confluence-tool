@@ -113,12 +113,16 @@ def get_page_properties(html, need_html=False, need_data=False, properties=None,
 
 class PagePropertiesEditor:
 
-    def __init__(self, pagePropertiesEditor, templates={}, confluence=None,  **kwargs):
+    def __init__(self, pagePropertiesEditor, templates={}, confluence=None, pagePropertiesOrder=None, **kwargs):
         self.editor = pagePropertiesEditor
         self.templates = templates
         self.confluence = confluence
 
-        #pprint(self.editor)
+        self.order = None
+        if 'order' in kwargs:
+            self.order = kwargs['order']
+        if pagePropertiesOrder is not None:
+            self.order = pagePropertiesOrder
 
         self.renderer = Renderer(
             search_dirs = "{}/templates".format(dirname(__file__)),
@@ -259,7 +263,13 @@ class PagePropertiesEditor:
             x.html(html_data)
 
         selector = "ac|structured-macro[ac|name=details] table tbody"
-        for key, action in self.editor.items():
+        order = self.order
+        if order is None:
+            order = self.editor.keys()
+
+        for key in self.editor.items():
+            action = self.editor[key]
+
             if action == 'delete': continue
             if key not in updated_keys:
                 html_data = self.edit_prop(key, '', action)

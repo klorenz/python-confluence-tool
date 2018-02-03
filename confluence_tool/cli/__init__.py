@@ -97,14 +97,27 @@ class Config:
         except ConfigFileMissing:
             config = {}
 
+        old_baseurl = config[config_name].get('baseurl')
+        old_username = config[config_name].get('username')
+
+        print "ou: %s" % old_username
+
         baseurl  = self.args.get('baseurl')
         username = self.args.get('username')
+
+        if baseurl is None:
+            baseurl = old_baseurl
+        if username is None:
+            username = old_username
 
         if config_name in config:
             old_baseurl = config[config_name].get('baseurl')
             old_username = config[config_name].get('username')
-            if old_baseurl is not None and old_baseurl != baseurl or old_username != username:
-                keyring.delete_password("confluence-tool "+old_baseurl, old_username)
+            if old_baseurl != baseurl or old_username != username:
+                try:
+                    keyring.delete_password("confluence-tool "+old_baseurl, old_username)
+                except:
+                    pass
 
         config[config_name] = cfg = dict(
             baseurl  = baseurl,
@@ -113,7 +126,7 @@ class Config:
 
         print "Password will be stored in your systems keyring."
         import getpass
-        password = getpass.getpass()
+        password = getpass.getpass("Password (%s): " % username)
         keyring.set_password('confluence-tool '+baseurl, username, password)
 
         for k,v in cfg.items():
