@@ -267,7 +267,7 @@ class PagePropertiesEditor:
         if order is None:
             order = self.editor.keys()
 
-        for key in self.editor.items():
+        for key in order:
             action = self.editor[key]
 
             if action == 'delete': continue

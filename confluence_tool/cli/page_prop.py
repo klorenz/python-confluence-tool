@@ -259,7 +259,7 @@ def cmd_page_prop_set(config):
                 if isinstance(doc['pageProperties'], list):
                     _order = []
                     for e in doc['pageProperties']:
-                        for k,v in e:
+                        for k,v in e.items():
                             _order.append(k)
                             doc['pagePropertiesEditor'][k] = {'replace': v}
                     doc['pagePropertiesOrder'] = _order
@@ -277,7 +277,10 @@ def cmd_page_prop_set(config):
             doc_labels = [ doc_labels ]
 
         for result in confluence.setPageProperties(doc):
-            print "updated {spacekey}:{title} ({id})".format(**(result['page'].dict('spacekey', 'title', 'id')))
+            if isinstance(result['page'], dict):
+                print("created {spacekey}:{title} ({id})".format(id=result['result']['id'], **result['page'])
+            else:
+                print("updated {spacekey}:{title} ({id})".format(**(result['page'].dict('spacekey', 'title', 'id'))))
 
             _labels = labels+doc_labels
             if len(_labels):
