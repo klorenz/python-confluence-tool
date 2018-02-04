@@ -278,7 +278,7 @@ def cmd_page_prop_set(config):
 
         for result in confluence.setPageProperties(doc):
             if isinstance(result['page'], dict):
-                print("created {spacekey}:{title} ({id})".format(id=result['result']['id'], **result['page'])
+                print("created {spacekey}:{title} ({id})".format(id=result['result']['id'], **result['page']))
             else:
                 print("updated {spacekey}:{title} ({id})".format(**(result['page'].dict('spacekey', 'title', 'id'))))
 

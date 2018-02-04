@@ -487,7 +487,7 @@ class ConfluenceAPI:
 
         if isinstance(expand, list):
             expand = ','.join(expand)
-        return self.get('/rest/cw/1/content/%s' % page.id, expand=expand)
+        return self.get('/rest/cw/1/content/%s/status' % page.id, expand=expand)
 
     def cwApprove(self, page, name, note=None):
         """approve a page"""
@@ -497,7 +497,7 @@ class ConfluenceAPI:
             note = note)
 
     def cwReject(self, page, name, note=None):
-        """approve a page"""
+        """reject a page"""
         return self.post(
             '/rest/adhocworkflows/latest/approval/%s/reject' % page.id,
             name = name,

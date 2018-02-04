@@ -1,5 +1,5 @@
 from .cli import command, arg, optarg_cql, arg_filter, arg_parent, arg_cql, arg_message, arg_expand
-import pyaml
+import pyaml, sys
 
 cw_command = command.add_subcommands('cw', help="comala workflows")
 
@@ -34,6 +34,10 @@ def cw_approve(config):
     """
     confluence = config.getConfluenceAPI()
 
+    message = config.get('message', '')
+    if message == '-':
+        message = sys.stdin.read()
+
     first = True
     for page in confluence.getPages(pages=config.cql):
         if not first:
@@ -65,7 +69,7 @@ def cw_approve(config):
         else:
             name = config.name
 
-        result = confluence.cwApprove(page, name=name, note=config.get('message', ''))
+        result = confluence.cwApprove(page, name=name, note=message)
         print_info(page, result)
 
 
@@ -76,6 +80,10 @@ def cw_reject(config):
     """reject a page
     """
     confluence = config.getConfluenceAPI()
+
+    message = config.get('message', '')
+    if message == '-':
+        message = sys.stdin.read()
 
     first = True
     for page in confluence.getPages(pages=config.cql):
@@ -97,11 +105,11 @@ def cw_reject(config):
                 print_info(page, result)
                 continue
 
-            name = result['approvals']['name']
+            name = result['approvals'][0]['name']
 
         else:
             name = config.name
 
-        result = confluence.cwReject(page, name=name, note=config.get('message', ''))
+        result = confluence.cwReject(page, name=name, note=message)
 
         print_info(page, result)
