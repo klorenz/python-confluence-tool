@@ -34,6 +34,8 @@ class StorageEditor:
         if isinstance(content, (dict, Page)):
             if content.get('body'):
                 content = content['body']['storage']['value']
+            else:
+                content = ''
 
         try:
             Q = self.begin_edit(content)
@@ -66,7 +68,11 @@ class StorageEditor:
 
             log.debug("content for %s: %s", method, content)
 
-            selection = Q(action['select'])
+            if action.get('select'):
+                selection = Q(action['select'])
+            else:
+                selection = Q
+
             log.debug("selection: %s", selection)
 
             #import rpdb2 ; rpdb2.start_embedded_debugger('foo')

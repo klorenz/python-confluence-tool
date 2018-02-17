@@ -9,6 +9,7 @@ from .storage_editor import edit
 from pyquery import PyQuery
 from pystache import Renderer
 from pprint import pprint
+from datetime import datetime, date
 
 import re
 
@@ -168,10 +169,16 @@ class PagePropertiesEditor:
             # finally return the default template
             return self.renderer.render_name(name, context)
 
+        logger.debug("value (%s): %s", value.__class__.__name__, value)
+
         if isinstance(value, list):
             values = [ {'value': self.get_storage(key, v, templates).strip() } for v in value ]
             return render('list', list=values)
 
+        if isinstance(value, date):
+            value = value.isoformat()
+        if isinstance(value, datetime):
+            value = value.strftime('%Y-%m-%d')
 
         def replacer(m):
             d = m.groupdict()
