@@ -115,7 +115,7 @@ def show(config):
                 fields = [ result[f] for f in config['field'] ]
                 print config['format'].format(*fields)
 
-            print output_filter(unicode(config['format']).format(**result))
+            print output_filter(unicode(config['format']).format(**result)).encode('utf-8')
 
     elif config.get('data'):
         if config.get('data') == '-':
