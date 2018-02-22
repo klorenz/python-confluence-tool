@@ -5,7 +5,22 @@ Confluence Tool is for doing batch operations in confluence.
 
 ## Getting Started
 
-For configuration, please run "confluence-tool -b BASE_URL config"
+For inital configuration, please run: 
+
+   ct -b BASE_URL -u USERNAME config
+
+For updating configuration, please run:
+
+   ct -b BASE_URL -u USERNAME config --update-password
+
+These two commands configure _default_ Configuration.  If you need multiple
+confiugrations, you can name them with `-c` option:
+
+   ct -c doc -b BASE_URL -u USERNAME config
+
+Then you can run a command using this config with:
+
+   ct -c doc show --ls 'space = FOO'
 
 """
 from argdeco import CommandDecorator, arg, mutually_exclusive, group
