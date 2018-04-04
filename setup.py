@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='confluence-tool',
-    version='0.2.0',
+    version='0.2.1',
     description='Confluence API and CLI',
     author='Kay-Uwe (Kiwi) Lorenz',
     author_email='kiwi@franka.dyndns.org',
