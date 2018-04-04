@@ -97,6 +97,9 @@ class Config:
         except ConfigFileMissing:
             config = {}
 
+        if 'default' not in config:
+            config['default'] = {}
+
         old_baseurl = config[config_name].get('baseurl')
         old_username = config[config_name].get('username')
 
