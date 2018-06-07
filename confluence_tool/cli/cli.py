@@ -5,7 +5,7 @@ Confluence Tool is for doing batch operations in confluence.
 
 ## Getting Started
 
-For inital configuration, please run: 
+For inital configuration, please run:
 
    ct -b BASE_URL -u USERNAME config
 
@@ -34,8 +34,10 @@ command = CommandDecorator(
     arg('-d', '--debug',       action="store_true", help="get more information on exceptions"),
 )
 
-arg_cql = positional_arg_cql = arg('cql', help="SPACE:title, pageID or CQL, run '%(prog)s cql -h' for more help")
-optarg_cql = positional_optarg_cql = arg('cql', nargs="?", help="SPACE:title, pageID or CQL, '%(prog)s cql -h' for more help")
+arg_cql = positional_arg_cql = arg('cql', help="SPACE:title, pageID or CQL, run 'ct help-cql' for more help")
+optarg_cql = positional_optarg_cql = arg('cql', nargs="?", help="SPACE:title, pageID or CQL, 'ct help-cql' for more help")
+
+arg_pagename = positional_arg_cql = arg('pagename', help="SPACE:title")
 
 arg_expand  = arg('-e', '--expand', help="values to expand")
 arg_filter  = arg('-f', '--filter', help="page property filter run '%(prog)s page-prop-filtering -h' for more help")

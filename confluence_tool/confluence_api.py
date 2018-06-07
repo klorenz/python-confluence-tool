@@ -641,7 +641,7 @@ class ConfluenceAPI:
             title = title,
             type  = 'page',
             space = {'key': space},
-            body  = {'storage': {'value': storage, 'representation': 'storage'}}
+            body  = {'storage': {'value': storage, 'representation': representation}}
         )
 
         if parent is not None:

@@ -1,6 +1,6 @@
 import yaml, pyaml, sys
 from difflib import Differ
-from .cli import command, arg, optarg_cql, arg_filter, arg_parent, arg_add_label
+from .cli import command, arg, optarg_cql, arg_filter, arg_parent, arg_add_label, arg_pagename
 from ..storage_editor import StorageEditor
 
 # @command('create', arg_parent, arg_label, arg_space, arg("pagespec")
@@ -107,6 +107,22 @@ def cmd_edit(config):
                 parent = config.parent
             ))
 
+@command('create',
+    arg_pagename,
+    arg_parent,
+    arg_add_label,
+    arg('file', nargs="?", help="file to read data from"),
+    # need arg_group
+    arg('--show', action="store_true", help="show new content"),
+    arg('--wiki', action="store_true", help="given content is wiki format"),
+    )
+def cmd_create(config):
+    confluence = config.getConfluenceAPI()
+    for page in confluence.getPages(confluence.resolveCQL(config['pagename'])):
+        raise "Page %(pagename)s already exists" % config
+
+    return cmd_update(config)
+
 @command('update',
     optarg_cql,
     arg_filter,
@@ -116,6 +132,7 @@ def cmd_edit(config):
     # need arg_group
     arg('--show', action="store_true", help="show new content"),
     arg('--diff', action="store_true", help="show diff"),
+    arg('--wiki', action="store_true", help="given content is wiki format"),
     )
 def cmd_update(config):
     """edit a confluence page using CSS selections
@@ -128,7 +145,7 @@ def cmd_update(config):
     confluence = config.getConfluenceAPI()
     first = True
 
-    if not config['file']:
+    if not config['file'] or config['file'] == '-':
         content = sys.stdin.read()
     else:
         with open(fn, 'r') as f:
@@ -137,24 +154,28 @@ def cmd_update(config):
     # if 'page' in editor_config:
     #     cql = confluence.resolveCQL(editor_config.pop('page'))
 
+    if config['pagename']:
+        cql = config['pagename']
+
     if config['cql']:
         cql = config['cql']
 
-    #editor = StorageEditor(confluence, **editor_config)
+    representation = 'storage'
+    if config['wiki']:
+        representation = 'wiki'
 
     found = False
     for page in confluence.getPages(confluence.resolveCQL(cql), filter=config.filter, expand=['version']):
         p = page.dict('id', 'title', 'version')
         p['storage'] = content
         p['version'] = int(page['version']['number'])+1
+        p['representation'] = representation
 
         result = confluence.updatePage(**p)
         found = True
 
         pyaml.p(result)
         #confluence.updatePage(id=page['id'], title=page['title'], body=)
-
-    #def updatePage(self, id, title, body=None, version=None, type='page', storage=None, wiki=None):
 
     if not found:
         space, title = cql.split(':', 1)
@@ -169,9 +190,10 @@ def cmd_update(config):
                 space = space,
                 title = title,
                 storage = content,
-                parent = config.parent
+                parent = config.parent,
+                representation = representation
             ))
-        pyaml.p(result)
+        pyaml.p(data)
 
 @command('move', optarg_cql, arg_filter, arg_parent)
 def move(config):
