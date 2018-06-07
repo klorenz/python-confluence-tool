@@ -176,6 +176,7 @@ def cmd_page_prop_set(config):
     files = []
 
     # handle propset
+    _order = []
     propset = {}
     for prop in config['propset']:
         if prop.endswith('--'):
@@ -195,6 +196,8 @@ def cmd_page_prop_set(config):
                     if not isinstance(_prop[op], list):
                         _prop[op] = [ _prop[op] ]
                     _prop[op].append(vlaue)
+
+                _order.append(name)
 
             else:
                 files.append(prop)
@@ -227,6 +230,7 @@ def cmd_page_prop_set(config):
         document = {
             'page': config['cql'],
             'pagePropertiesEditor': propset,
+            'pagePropertiesOrder': _order
         }
         if config.get('parent', None):
             document['parent'] = config['parent']
