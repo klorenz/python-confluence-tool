@@ -32,6 +32,7 @@ command = CommandDecorator(
     arg('-u', '--username',    help="username for logging in (if not present, tried to read from netrc)"),
     arg('-p', '--password',    help="password for logging in (if not present, tried to read from netrc)"),
     arg('-d', '--debug',       action="store_true", help="get more information on exceptions"),
+    arg('-q', '--quiet',       action="store_true", help="be quiet"),
 )
 
 arg_cql = positional_arg_cql = arg('cql', help="SPACE:title, pageID or CQL, run 'ct help-cql' for more help")
@@ -45,6 +46,7 @@ arg_state   = arg('-s', '--state', help="get all pages for corresponding state '
 arg_status   = arg('-S', '--status', help="get all pages for corresponding status")
 arg_write_format = arg('-w', '--write', help="format to write", choices=['format', 'yaml', 'json'], default="yaml")
 arg_format  = arg('-F', '--format', help="format string for formatting the output.  May be either mustache or format string")
+arg_page_type  = arg('-T', '--page-type', choices=['page', 'blogpost'], help="page type", default='page')
 arg_parent  = arg('-p', '--parent', help="specify parent for a page, which might be created")
 arg_message = arg('-m', '--message', help="add a note or message")
 arg_add_label = arg('-l', '--label', action="append", help="add these labels to the page")

@@ -1,6 +1,6 @@
 import yaml, pyaml, sys
 from difflib import Differ
-from .cli import command, arg, optarg_cql, arg_filter, arg_parent, arg_add_label, arg_pagename
+from .cli import command, arg, optarg_cql, arg_filter, arg_parent, arg_add_label, arg_pagename, arg_page_type
 from ..storage_editor import StorageEditor
 
 # @command('create', arg_parent, arg_label, arg_space, arg("pagespec")
@@ -111,6 +111,7 @@ def cmd_edit(config):
     arg_pagename,
     arg_parent,
     arg_add_label,
+    arg_page_type,
     arg('file', nargs="?", help="file to read data from"),
     # need arg_group
     arg('--show', action="store_true", help="show new content"),
@@ -119,7 +120,9 @@ def cmd_edit(config):
 def cmd_create(config):
     confluence = config.getConfluenceAPI()
     for page in confluence.getPages(confluence.resolveCQL(config['pagename'])):
-        raise "Page %(pagename)s already exists" % config
+        if not config['quiet']:
+            sys.stderr.write("Page %(pagename)s already exists\n" % config)
+        return 1
 
     return cmd_update(config)
 
@@ -128,6 +131,7 @@ def cmd_create(config):
     arg_filter,
     arg_parent,
     arg_add_label,
+    arg_page_type,
     arg('file', nargs="?", help="file to read data from"),
     # need arg_group
     arg('--show', action="store_true", help="show new content"),
@@ -154,10 +158,10 @@ def cmd_update(config):
     # if 'page' in editor_config:
     #     cql = confluence.resolveCQL(editor_config.pop('page'))
 
-    if config['pagename']:
+    if config.get('pagename'):
         cql = config['pagename']
 
-    if config['cql']:
+    if config.get('cql'):
         cql = config['cql']
 
     representation = 'storage'
@@ -174,8 +178,11 @@ def cmd_update(config):
         result = confluence.updatePage(**p)
         found = True
 
-        pyaml.p(result)
-        #confluence.updatePage(id=page['id'], title=page['title'], body=)
+        if not config['quiet']:
+            pyaml.p(result)
+
+        if config['label']:
+            confluence.addLabels(p['id'], config['label'])
 
     if not found:
         space, title = cql.split(':', 1)
@@ -189,11 +196,17 @@ def cmd_update(config):
             result  = confluence.createPage(
                 space = space,
                 title = title,
+                type = config['page_type'],
                 storage = content,
                 parent = config.parent,
                 representation = representation
             ))
-        pyaml.p(data)
+
+        if config['label']:
+            data['labels'] = confluence.addLabels(data['result']['id'], config['label'])
+
+        if not config['quiet']:
+            pyaml.p(data)
 
 @command('move', optarg_cql, arg_filter, arg_parent)
 def move(config):

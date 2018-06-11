@@ -636,10 +636,10 @@ class ConfluenceAPI:
         page = results['results'][0]
         return page['space']['key'], page['title'], page['id']
 
-    def createPage(self, space, title, storage, parent=None, representation='storage'):
+    def createPage(self, space, title, storage, parent=None, representation='storage', type='page'):
         data = dict(
             title = title,
-            type  = 'page',
+            type  = type,
             space = {'key': space},
             body  = {'storage': {'value': storage, 'representation': representation}}
         )
