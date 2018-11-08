@@ -38,7 +38,7 @@ command = CommandDecorator(
 arg_cql = positional_arg_cql = arg('cql', help="SPACE:title, pageID or CQL, run 'ct help-cql' for more help")
 optarg_cql = positional_optarg_cql = arg('cql', nargs="?", help="SPACE:title, pageID or CQL, 'ct help-cql' for more help")
 
-arg_pagename = positional_arg_cql = arg('pagename', help="SPACE:title")
+arg_pagename = arg('pagename', help="SPACE:title")
 
 arg_expand  = arg('-e', '--expand', help="values to expand")
 arg_filter  = arg('-f', '--filter', help="page property filter run '%(prog)s page-prop-filtering -h' for more help")
@@ -84,7 +84,7 @@ def cql_help(config):
      - `"IT:Some title"` to find page titled "Some title" in space "IT"
 
     """
-    command['cql'].print_help()
+    command['help-cql'].print_help()
 
 @command('help-cw-states')
 def comala_workflow_states(config):
@@ -128,9 +128,6 @@ def page_prop_filtering(config):
     command['page-prop-filtering'].print_help()
 
 import pyaml, re, sys
-
-
-
 
 
 

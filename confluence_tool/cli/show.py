@@ -1,5 +1,42 @@
 from .cli import *
 import sys
+import logging
+log = logging.getLogger('show')
+
+@command('get-parent', positional_arg_cql, arg_write_format, arg_format)
+def get_parent(config):
+    """
+    Example:
+        ct get-parent SPACE:title -F "{page.id} {id}"
+
+    Where page.id is the page's id and id is the parent's id.
+    """
+    cql = config.confluence_api.resolveCQL(config.get('cql'))
+
+    results = {}
+    for page in config.confluence_api.getPages(cql=cql, expand='ancestors'):
+        results[page['id']] = page['ancestors'][-1]
+        results[page['id']]['page'] = page.dict()
+
+    output_filter = lambda x: x
+
+    if config.get('format'):
+        for result in results.values():
+            if '{}' in config['format']:
+                fields = [ result[f] for f in config['field'] ]
+                print config['format'].format(*fields)
+
+            print output_filter(unicode(config['format']).format(**result)).encode('utf-8')
+
+    else:
+        if config['write'] == 'json':
+            import json
+            json.dump(results, sys.stdout)
+
+        elif config['write'] == 'yaml':
+            import pyaml
+            pyaml.p(results)
+
 
 @command('show',
     positional_arg_cql,
@@ -95,8 +132,11 @@ def show(config):
             config['field'] = ['id', 'spacekey', 'title']
 
     results = []
+    log.debug('config: %s', config.args)
     kwargs = config.dict('cql', 'expand', 'filter', 'state')
+    log.debug('kwargs: %s', kwargs)
     kwargs['cql'] = config.confluence_api.resolveCQL(kwargs['cql'])
+
 
     for page in config.confluence_api.getPages(**kwargs):
         rec = page.dict(*config['field'])

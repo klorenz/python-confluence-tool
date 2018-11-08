@@ -42,8 +42,13 @@ def cmd_page_prop_get(config):
     if config.get('dict'):
         results = {}
 
-    for pp in confluence.getPagesWithProperties(**config.dict('cql', 'filter', 'state')):
+    kwargs = config.dict('cql', 'filter', 'state')
+    kwargs['expand'] = ['ancestors']
 
+    for pp in confluence.getPagesWithProperties(**kwargs):
+
+        parent = pp['ancestors'][-1]
+        parent = dict(id=parent['id'], title=parent['title'], spacekey=pp.spacekey)
         if config.get('format'):
             try:
 
@@ -54,6 +59,7 @@ def cmd_page_prop_get(config):
                     _props = dict(pp.getPageProperties())
                     _props.update(dict([ (k.lower(), v) for (k,v) in _props.items()]))
                     _props.update(page_id=pp.id, page_title=pp.title, page_spacekey=pp.spacekey)
+                    _props.update(parent=parent)
 
                     print unicode(config['format']).format(**_props).encode('utf-8')
             except UnicodeEncodeError:
@@ -62,6 +68,7 @@ def cmd_page_prop_get(config):
         else:
             result = pp.dict("id", "spacekey", "title")
             result['pageProperties'] = dict(pp.getPageProperties(*config.props))
+            result['parent'] = parent
 
             if config.get('dict'):
                 results[result['id']] = result
