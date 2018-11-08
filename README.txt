@@ -1,4 +1,11 @@
-Documentation with pydoc-markdown (and mkdocs)
+# Getting started
+
+Get instructions with
+
+```bash
+ct --help
+```
+
 
 ### Create a Confluence page with page properties only
 
@@ -39,3 +46,4 @@ Some message
 ```
 
   
+Documentation with pydoc-markdown (and mkdocs)
