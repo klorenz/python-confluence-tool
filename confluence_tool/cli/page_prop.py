@@ -69,11 +69,9 @@ def cmd_page_prop_get(config):
         else:
             result = pp.dict("id", "spacekey", "title")
             if config.get('ordered'):
-                print("ordered!!")
                 result['pageProperties'] = []
                 for item in pp.getPageProperties(*config.props):
                     result['pageProperties'].append(dict([item]))
-                print("ordered!! %r", result)
             else:
                 result['pageProperties'] = dict(pp.getPageProperties(*config.props))
 

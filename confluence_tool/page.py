@@ -53,8 +53,12 @@ class Page(object):
         if name == 'spacekey':
             return self['spacekey']
 
+        if name == 'content':
+            return self['body']['storage']['value']
+
         if name in self.data:
             return self.data[name]
+
         raise AttributeError(name)
 
     def __getitem__(self, name):

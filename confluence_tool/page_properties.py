@@ -195,6 +195,8 @@ class PagePropertiesEditor:
             if d['datetime']:
                 return render('datetime', datetime=d['datetime'])
 
+        if not isinstance(value, basestring):
+            value = str(value)
         value = self.ELEM.sub(replacer, value)
 
         return render('value', value=value.strip())

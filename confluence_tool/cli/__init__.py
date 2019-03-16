@@ -2,6 +2,7 @@ from os.path import expanduser
 from confluence_tool import ConfluenceError, ConfluenceAPI
 import pyaml, yaml
 import logging
+from yaml import SafeLoader
 
 logging.basicConfig()
 
@@ -57,7 +58,7 @@ class Config:
     def readConfig(self):
         try:
             with open(self.config_file, 'r') as f:
-                return yaml.load(f)
+                return yaml.load(f, Loader=SafeLoader)
         except Exception as e:
             if self.args.get('debug'):
                 import traceback

@@ -527,15 +527,20 @@ class ConfluenceAPI:
             for page in self.getPagesWithProperties(cql, expand=['body.storage', 'version']):
                 new_content = editor.edit(page)
                 found = True
-                yield dict(
-                    page    = page,
-                    content = new_content,
+                old_content = page.content.replace(" />", "/>")
+                logger.debug("old: %r", old_content)
+                logger.debug("new: %r", new_content)
+
+                if new_content != old_content:
+                    logger.debug("content has changed")
                     result  = self.updatePage(
                         id = page['id'],
                         version = int(page['version']['number'])+1,
                         title   = page['title'],
-                        storage = new_content
-                    ))
+                        storage = new_content)
+                else:
+                    logger.debug("content has not changed")
+                    result = page
 
             if not found:
                 new_content = editor.edit()
@@ -552,8 +557,6 @@ class ConfluenceAPI:
                         storage = new_content,
                         parent = document.get('parent', None)
                     ))
-
-
 
     PAGE_PROP_FILTER = re.compile(r'^(?:(.*?)([!=])=(.*)|!(.*)|(.*)\?)$')
     def getPagesWithProperties(self, cql, filter=None, expand=[], state=None, **options):
