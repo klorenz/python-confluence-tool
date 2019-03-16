@@ -3,7 +3,8 @@ from .cli import command, arg, arg_format, optarg_cql, arg_filter, arg_state
 import pyaml, yaml
 
 @command('page-prop-get', optarg_cql, arg_filter, arg_format, arg_state,
-    arg('--dict', action="store_true", help="transform page properties to dict (key page_id) before output"),
+    arg('--dict',    action="store_true", help="transform page properties to dict (key page_id) before output"),
+    arg('--ordered', '-O', action="store_true", help="print properties as list of {key: 'value'}"),
     arg('props', nargs="*", help="properties to retrieve"),
     )
 def cmd_page_prop_get(config):
@@ -67,8 +68,16 @@ def cmd_page_prop_get(config):
                 sys.stderr.write("Error formatting %s:%s\n %s\n" % (pp.spacekey, pp.title, repr(dict(pp.getPageProperties()))))
         else:
             result = pp.dict("id", "spacekey", "title")
-            result['pageProperties'] = dict(pp.getPageProperties(*config.props))
-            result['parent'] = parent
+            if config.get('ordered'):
+                print("ordered!!")
+                result['pageProperties'] = []
+                for item in pp.getPageProperties(*config.props):
+                    result['pageProperties'].append(dict([item]))
+                print("ordered!! %r", result)
+            else:
+                result['pageProperties'] = dict(pp.getPageProperties(*config.props))
+
+            result['parent'] = "{spacekey}:{title}".format(**parent)
 
             if config.get('dict'):
                 results[result['id']] = result
@@ -78,8 +87,8 @@ def cmd_page_prop_get(config):
                 else:
                     first = False
 
-                result = pp.dict("id", "spacekey", "title")
-                result['pageProperties'] = dict(pp.getPageProperties(*config.props))
+                #result = pp.dict("id", "spacekey", "title")
+                #result['pageProperties'] = dict(pp.getPageProperties(*config.props))
 
                 pyaml.p(result)
 
@@ -275,7 +284,7 @@ def cmd_page_prop_set(config):
                             doc['pagePropertiesEditor'][k] = {'replace': v}
                     doc['pagePropertiesOrder'] = _order
                 else:
-                    for k,v in doc['pageProperties']:
+                    for k,v in doc['pageProperties'].items():
                         doc['pagePropertiesEditor'][k] = {'replace': v}
 
                 del doc['pageProperties']

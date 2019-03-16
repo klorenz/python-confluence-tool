@@ -118,6 +118,9 @@ def cmd_edit(config):
     arg('--wiki', action="store_true", help="given content is wiki format"),
     )
 def cmd_create(config):
+    """
+    example
+    """
     confluence = config.getConfluenceAPI()
     for page in confluence.getPages(confluence.resolveCQL(config['pagename'])):
         if not config['quiet']:

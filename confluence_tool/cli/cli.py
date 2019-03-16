@@ -129,6 +129,52 @@ def page_prop_filtering(config):
 
 import pyaml, re, sys
 
+@command('post',
+    arg('url', help="url start with / or /rest/ will be prepended"),
+    arg('--stream', help="get raw data", default=False, action="store_true"),
+    arg('--progress', help="write out progress", default=False, action="store_true"),
+    arg('--output-file', '-o', help="output file"),
+    arg('params', nargs="*", help="parameters to pass to url")
+    )
+def post_method(config):
+
+    PARAM = re.compile(r'(.*?)=(.*)')
+
+    params = {}
+
+    for item in config.get('params'):
+        m = PARAM.search(item)
+        if m:
+            (name, value) = m.groups()
+            params[name] = value
+
+    url = config.get('url')
+
+    output_file = config.get('output_file')
+    if output_file and output_file != '-':
+        outstream = open(output_file, 'wb')
+    else:
+        outstream = sys.stdout
+
+    progress = config.get('progress')
+
+    if 1:
+        if not url.startswith('/'):
+            url = '/rest/'+url
+
+        confluence = config.getConfluenceAPI()
+
+        result = confluence.post(url, stream=config.get('stream'), **params)
+        if config.get('stream'):
+            _len = 0
+            for data in result.iter_content(chunk_size=1024*1024):
+                outstream.write(data)
+
+                _len += len(data)
+                if progress:
+                    sys.stderr.write("\r%s bytes" % _len)
+        else:
+            pyaml.p(result)
 
 
 @command('get',

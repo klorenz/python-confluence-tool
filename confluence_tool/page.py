@@ -37,8 +37,12 @@ class Page(object):
         self.api.getPage(self.data['id'], expand=self.expand)
 
     def __getattr__(self, name):
+        if name == 'pageProperties':
+            self.pageProperties = [item for item in self.loadPageProperties() ]
+            return self.pageProperties
+
         if name == 'pageProperty':
-            self.pageProperty = self.data['pageProperties'] = dict(self.loadPageProperties())
+            self.pageProperty = self.data['pageProperties'] = dict(self.pageProperties)
             return self.pageProperty
 
         if name == 'labels':
@@ -87,7 +91,7 @@ class Page(object):
         return self.pageProperty.get(name, default)
 
     def getPageProperties(self, *names):
-        for k,v in self.pageProperty.items():
+        for k,v in self.pageProperties:
             if len(names):
                 if k in names:
                     yield (k,v)
