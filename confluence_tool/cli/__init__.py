@@ -165,6 +165,7 @@ from .cli import command, arg
 
 confluence_tool_config = {}
 
+
 def main(argv=None):
 
     def config_factory(args, **kwargs):
@@ -204,3 +205,5 @@ import config
 import labels
 import comala_workflow
 import space
+
+argparser = command.argparser

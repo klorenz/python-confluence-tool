@@ -1,38 +1,34 @@
-"""
-# Confluence Tool
-
+"""\
 Confluence Tool is for doing batch operations in confluence.
 
-## Getting Started
-
-For inital configuration, please run:
+Run for inital configuration::
 
    ct -b BASE_URL -u USERNAME config
 
-For updating configuration, please run:
+Run for updating configuration::
 
    ct -b BASE_URL -u USERNAME config --update-password
 
 These two commands configure _default_ Configuration.  If you need multiple
-confiugrations, you can name them with `-c` option:
+confiugrations, you can name them with :option:`ct -c` option::
 
    ct -c doc -b BASE_URL -u USERNAME config
 
-Then you can run a command using this config with:
+Run a command using this config by speficying :option:`ct -c`::
 
    ct -c doc show --ls 'space = FOO'
-
 """
 from argdeco import CommandDecorator, arg, mutually_exclusive, group
 
 command = CommandDecorator(
-    arg('-c', '--config',      help="Configuration name", default='default'),
-    arg('-C', '--config-file', help="Configuratoin file (default ~/.confluence-tool.yaml)"),
-    arg('-b', '--baseurl',     help="Confluence Base URL, e.g. http://example.com/confluence"),
+    arg('-c', '--config',      help="provide optional configuration name (default: 'default')", default='default'),
+    arg('-C', '--config-file', help="configuration file (default ~/.confluence-tool.yaml)"),
+    arg('-b', '--baseurl',     help="confluence Base URL, e.g. http://example.com/confluence"),
     arg('-u', '--username',    help="username for logging in (if not present, tried to read from netrc)"),
     arg('-p', '--password',    help="password for logging in (if not present, tried to read from netrc)"),
     arg('-d', '--debug',       action="store_true", help="get more information on exceptions"),
     arg('-q', '--quiet',       action="store_true", help="be quiet"),
+    prog='ct',
 )
 
 arg_cql = positional_arg_cql = arg('cql', help="SPACE:title, pageID or CQL, run 'ct help-cql' for more help")
@@ -41,8 +37,8 @@ optarg_cql = positional_optarg_cql = arg('cql', nargs="?", help="SPACE:title, pa
 arg_pagename = arg('pagename', help="SPACE:title")
 
 arg_expand  = arg('-e', '--expand', help="values to expand")
-arg_filter  = arg('-f', '--filter', help="page property filter run '%(prog)s page-prop-filtering -h' for more help")
-arg_state   = arg('-s', '--state', help="get all pages for corresponding state '%(prog)s cw-states -h' for more help")
+arg_filter  = arg('-f', '--filter', help="page property filter run 'ct page-prop-filtering -h' for more help")
+arg_state   = arg('-s', '--state', help="get all pages for corresponding state 'ct cw-states -h' for more help")
 arg_status   = arg('-S', '--status', help="get all pages for corresponding status")
 arg_write_format = arg('-w', '--write', help="format to write", choices=['format', 'yaml', 'json'], default="yaml")
 arg_format  = arg('-F', '--format', help="format string for formatting the output.  May be either mustache or format string")
@@ -58,7 +54,9 @@ arg_parent = arg('-p', '--parent', help="specify parent for a page, which might 
 
 @command('help-cql')
 def cql_help(config):
-    """How to query pages.
+    """\
+    How to query pages
+    ~~~~~~~~~~~~~~~~~~
 
     You can pass [CQL] queries to many commands (indicated by parameter cql).
     In many queries you have to specify the ID, which originally needs an extra
@@ -129,100 +127,96 @@ def page_prop_filtering(config):
 
 import pyaml, re, sys
 
-@command('post',
+method_args = [
     arg('url', help="url start with / or /rest/ will be prepended"),
     arg('--stream', help="get raw data", default=False, action="store_true"),
-    arg('--progress', help="write out progress", default=False, action="store_true"),
+    arg('--progress', help="write out progress to stderr", default=False, action="store_true"),
     arg('--output-file', '-o', help="output file"),
+    arg('--header', '-H', help="header data in yaml format, can be repeated", action="append", default=[]),
     arg('params', nargs="*", help="parameters to pass to url")
-    )
+]
+
+def _handle_method(method, config, data=None, json=None):
+    """
+    Send data to confluence with %(method)s method.
+
+    Simple request:
+
+        ct %(method_)s /rest/api/space -
+
+    """
+
+    PARAM = re.compile(r'(.*?)=(.*)')
+
+    params = {}
+    for item in config.get('params'):
+        if item == '-':
+            data = sys.stdin.read()
+            try:
+                json = yaml.loads(inputdata)
+                data = None
+            except:
+                pass
+
+        m = PARAM.search(item)
+        if m:
+            (name, value) = m.groups()
+            params[name] = value
+
+    headers = {}
+    for item in config.get('header', []):
+        for k,v in yaml.loads(item).items():
+            headers[k] = v
+
+    url = config.get('url')
+
+    output_file = config.get('output_file')
+    if output_file and output_file != '-':
+        outstream = open(output_file, 'wb')
+    else:
+        outstream = sys.stdout
+
+    progress = config.get('progress')
+
+    if 1:
+        if not url.startswith('/'):
+            url = '/rest/'+url
+
+        confluence = config.getConfluenceAPI()
+
+        result = confluence.request(method, url, stream=config.get('stream'), json=json, data=data, **params)
+        if config.get('stream'):
+            _len = 0
+            for data in result.iter_content(chunk_size=1024*1024):
+                outstream.write(data)
+
+                _len += len(data)
+                if progress:
+                    sys.stderr.write("\r%s bytes" % _len)
+        else:
+            pyaml.p(result)
+
+
+@command('post', *method_args)
 def post_method(config):
-
-    PARAM = re.compile(r'(.*?)=(.*)')
-
-    params = {}
-
-    for item in config.get('params'):
-        m = PARAM.search(item)
-        if m:
-            (name, value) = m.groups()
-            params[name] = value
-
-    url = config.get('url')
-
-    output_file = config.get('output_file')
-    if output_file and output_file != '-':
-        outstream = open(output_file, 'wb')
-    else:
-        outstream = sys.stdout
-
-    progress = config.get('progress')
-
-    if 1:
-        if not url.startswith('/'):
-            url = '/rest/'+url
-
-        confluence = config.getConfluenceAPI()
-
-        result = confluence.post(url, stream=config.get('stream'), **params)
-        if config.get('stream'):
-            _len = 0
-            for data in result.iter_content(chunk_size=1024*1024):
-                outstream.write(data)
-
-                _len += len(data)
-                if progress:
-                    sys.stderr.write("\r%s bytes" % _len)
-        else:
-            pyaml.p(result)
+    return _handle_method('POST', config)
+post_method.__doc__ = _handle_method.__doc__ % dict(method='POST', method_='post')
 
 
-@command('get',
-    arg('url', help="url start with / or /rest/ will be prepended"),
-    arg('--stream', help="get raw data", default=False, action="store_true"),
-    arg('--progress', help="write out progress", default=False, action="store_true"),
-    arg('--output-file', '-o', help="output file"),
-    arg('params', nargs="*", help="parameters to pass to url"))
+@command('get', *method_args)
 def get_method(config):
-    """
-    Get from a rest URL
+    return _handle_method('GET', config)
+get_method.__doc__ = _handle_method.__doc__ % dict(method='GET', method_='get')
 
-    """
 
-    PARAM = re.compile(r'(.*?)=(.*)')
+@command('put', *method_args)
+def get_method(config):
+    return _handle_method('PUT', config)
+get_method.__doc__ = _handle_method.__doc__ % dict(method='PUT', method_='put')
 
-    params = {}
 
-    for item in config.get('params'):
-        m = PARAM.search(item)
-        if m:
-            (name, value) = m.groups()
-            params[name] = value
+@command('delete', *method_args)
+def get_method(config):
+    return _handle_method('DELETE', config)
+get_method.__doc__ = _handle_method.__doc__ % dict(method='DELETE', method_='delete')
 
-    url = config.get('url')
-
-    output_file = config.get('output_file')
-    if output_file and output_file != '-':
-        outstream = open(output_file, 'wb')
-    else:
-        outstream = sys.stdout
-
-    progress = config.get('progress')
-
-    if 1:
-        if not url.startswith('/'):
-            url = '/rest/'+url
-
-        confluence = config.getConfluenceAPI()
-
-        result = confluence.get(url, stream=config.get('stream'), **params)
-        if config.get('stream'):
-            _len = 0
-            for data in result.iter_content(chunk_size=1024*1024):
-                outstream.write(data)
-
-                _len += len(data)
-                if progress:
-                    sys.stderr.write("\r%s bytes" % _len)
-        else:
-            pyaml.p(result)

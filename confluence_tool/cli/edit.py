@@ -19,11 +19,11 @@ from ..storage_editor import StorageEditor
     arg('--diff', action="store_true", help="show diff"),
     )
 def cmd_edit(config):
-    """edit a confluence page using CSS selections
+    """\
+    edit a confluence page using CSS selections
 
     Pass a dictionary in YAML or JSON format via STDIN or file to
     confluence-tool, which defines edit actions to edit all matching pages.
-
     """
 
     confluence = config.getConfluenceAPI()
@@ -118,7 +118,7 @@ def cmd_edit(config):
     arg('--wiki', action="store_true", help="given content is wiki format"),
     )
 def cmd_create(config):
-    """
+    """\
     example
     """
     confluence = config.getConfluenceAPI()
@@ -142,7 +142,8 @@ def cmd_create(config):
     arg('--wiki', action="store_true", help="given content is wiki format"),
     )
 def cmd_update(config):
-    """edit a confluence page using CSS selections
+    """\
+    edit a confluence page using CSS selections
 
     Pass a dictionary in YAML or JSON format via STDIN or file to
     confluence-tool, which defines edit actions to edit all matching pages.

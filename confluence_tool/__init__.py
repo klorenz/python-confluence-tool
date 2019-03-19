@@ -4,3 +4,8 @@ This module provides the main API of Confluence.  You can either import confluen
 
 from .confluence_api import ConfluenceError, ConfluenceAPI
 from .cli import command, arg, main
+
+def argparse():
+    return command.argparser
+
+__version__ = "0.4.1"

@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
+from os.path import dirname
+import sys
+sys.path.append(dirname(__file__))
+from confluence_tool import __version__
 
 setup(
     name='confluence-tool',
-    version='0.4.1',
+    version=__version__,
     description='Confluence API and CLI',
     author='Kay-Uwe (Kiwi) Lorenz',
     author_email='kiwi@franka.dyndns.org',
@@ -18,6 +22,13 @@ setup(
             'pystache',
             'argdeco'
         ],
+    extras_require={
+        'docs':[
+            'sphinx >= 1.4',
+            'sphinx_rtd_theme',
+            'sphinxcontrib-autoprogram'
+            ]
+        },
     url='https://github.com/klorenz/python-confluence-tool',
     packages=['confluence_tool', 'confluence_tool.cli', ],
     package_data = {

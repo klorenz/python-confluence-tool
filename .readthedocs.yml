@@ -1,0 +1,7 @@
+# .readthedocs.yml
+#
+
+python:
+    version: 2.7
+    extra_requirements:
+        - docs

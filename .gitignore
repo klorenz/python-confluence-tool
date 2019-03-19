@@ -6,3 +6,4 @@ confluence_client
 pyquery
 MANIFEST
 dist
+docs/_build

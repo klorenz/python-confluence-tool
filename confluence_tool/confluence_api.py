@@ -5,6 +5,8 @@ import requests
 from .storage_editor import StorageEditor
 from .page_properties import PagePropertiesEditor
 
+import json as JSON
+
 import logging
 logger = logging.getLogger('confluence.api')
 #logger.setLevel(logging.DEBUG)
@@ -61,22 +63,33 @@ class ConfluenceAPI:
 
         raise AttributeError(name)
 
-    def request(self, method, endpoint, params=None, stream=None, **kwargs):
+    def request(self, method, endpoint, params=None, stream=None, data=None, json=None, headers=None, **kwargs):
         url = self.config['baseurl'] + endpoint
         if params is None:
             params = {}
 
-        headers = { 'X-Atlassian-Token': 'no-check' }
+        if headers is not None:
+            headers = dict(headers)
+        else:
+            headers = { 'X-Atlassian-Token': 'no-check' }
+
         if isinstance(params, dict):
             params.update(kwargs)
 
         try:
 
             if method == 'GET':
-                response = self.session.get(url, params=params, headers=headers, stream=stream)
-            else:
+                response = self.session.get(url, params=params, headers=headers, json=json, stream=stream)
+
+            elif data is not None:
+                response = self.session.request(method, url, data=data, params=params, json=json, headers=headers)
+
+            elif json is None and data is None:
                 headers.update({'Content-Type': 'application/json', 'Accept':'application/json'})
-                response = self.session.request(method, url, data=json.dumps(params), headers=headers)
+                response = self.session.request(method, url, data=JSON.dumps(params), headers=headers)
+
+            else:
+                response = self.session.request(method, url, data=data, json=json, params=params, headers=headers)
 
         except StandardError as e:
             logger.info("error in request %s %s with params %s", method, endpoint, params)
@@ -102,14 +115,14 @@ class ConfluenceAPI:
     def get(self, endpoint, params=None, **kwargs):
         return self.request('GET', endpoint, params, **kwargs)
 
-    def put(self, endpoint, params=None, **kwargs):
-        return self.request('PUT', endpoint, params, **kwargs)
+    def put(self, endpoint, params=None, data=None, json=None, **kwargs):
+        return self.request('PUT', endpoint, params, data=data, json=json, **kwargs)
 
-    def post(self, endpoint, params=None, **kwargs):
-        return self.request('POST', endpoint, params, **kwargs)
+    def post(self, endpoint, params=None, data=None, json=None, **kwargs):
+        return self.request('POST', endpoint, params, data=data, json=json, **kwargs)
 
-    def delete(self, endpoint, params=None, **kwargs):
-        return self.request('DELETE', endpoint, params, **kwargs)
+    def delete(self, endpoint, params=None, data=None, json=None, **kwargs):
+        return self.request('DELETE', endpoint, params, data=data, json=json, **kwargs)
 
     def createSpace(self, key, name, description=''):
         return self.post( '/rest/api/space',
@@ -457,19 +470,38 @@ class ConfluenceAPI:
             ref = str(ref)
 
         ref = ref.strip()
+        logger.debug("ref = %r", ref)
 
         if match(self.ANCESTOR):
             query = self.resolveCQL(*self.mob)
-            p = self.getPage(query)
-            return u"ancestor = {}".format(p.id)
+            queries = []
+            for p in self.getPages(query):
+                queries.append(u"ancestor = {}".format(p.id))
+
+            result = "("+" OR ".join(queries)+")"
+            logger.debug("ancestor CQL: %r", result)
+            return result
+            #return #u"ancestor = {}".format(p.id)
 
         if match(self.PARENT):
             query = self.resolveCQL(*self.mob)
-            p = self.getPage(query)
-            return u"parent = {}".format(p.id)
+            logger.debug("query = %r", query)
+            #p = self.getPage(query)
+            queries = []
+            for p in self.getPages(query):
+                queries.append(u"parent = {}".format(p.id))
+
+            result = "("+" OR ".join(queries)+")"
+            logger.debug("parent CQL: %r", result)
+            return result
+
+            #return u"parent = {}".format(p.id)
 
         if match(self.SPACE_PAGE_REF):
-            return u"space = {} AND title  = \"{}\"".format(*self.mob)
+            if not self.mob[1]:
+                return u"space = {}".format(*self.mob)
+            else:
+                return u"space = {} AND title  = \"{}\"".format(*self.mob)
 
         if match(self.PAGE_REF):
             return u"title  = \"{}\"".format(*self.mob)
