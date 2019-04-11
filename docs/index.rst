@@ -23,6 +23,8 @@ Contents
    querying-confluence
    filtering-results
    low-level-requests
+   api/cli
+   api/myquery
 
 
 
