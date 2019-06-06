@@ -20,7 +20,8 @@ setup(
             'pyquery',
             'pyaml',
             'pystache',
-            'argdeco'
+            'argdeco',
+            'lxml'
         ],
     extras_require={
         'docs':[
