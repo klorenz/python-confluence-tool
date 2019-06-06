@@ -8,4 +8,4 @@ from .cli import command, arg, main
 def argparse():
     return command.argparser
 
-__version__ = "0.4.2"
+__version__ = "0.5.0"
