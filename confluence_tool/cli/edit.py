@@ -32,7 +32,7 @@ def cmd_edit(config):
     if not config['file']:
         content = sys.stdin.read()
     else:
-        with open(fn, 'r') as f:
+        with open(config['file'], 'r') as f:
             content = f.read()
 
     try:
@@ -156,7 +156,7 @@ def cmd_update(config):
     if not config['file'] or config['file'] == '-':
         content = sys.stdin.read()
     else:
-        with open(fn, 'r') as f:
+        with open(config['file'], 'r') as f:
             content = f.read()
 
     # if 'page' in editor_config:
@@ -177,7 +177,9 @@ def cmd_update(config):
         p = page.dict('id', 'title', 'version')
         p['storage'] = content
         p['version'] = int(page['version']['number'])+1
-        p['representation'] = representation
+        # Not needed at the moment, as representation is based on parameters
+        # wiki and storage.
+        #p['representation'] = representation
 
         result = confluence.updatePage(**p)
         found = True
