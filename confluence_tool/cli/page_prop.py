@@ -2,6 +2,11 @@ import sys, re
 from .cli import command, arg, arg_format, optarg_cql, arg_filter, arg_state
 import pyaml, yaml
 
+import six
+
+if six.PY3:
+    unicode = str
+
 @command('page-prop-get', optarg_cql, arg_filter, arg_format, arg_state,
     arg('--dict',    action="store_true", help="transform page properties to dict (key page_id) before output"),
     arg('--ordered', '-O', action="store_true", help="print properties as list of {key: 'value'}"),
@@ -55,14 +60,14 @@ def cmd_page_prop_get(config):
 
                 if '{}' in config['format']:
                     fields = [ pp.pageProperty.get(f, '') for f in config['props'] ]
-                    print unicode(config['format']).format(*fields).encode('utf-8')
+                    print(unicode(config['format']).format(*fields).encode('utf-8'))
                 else:
                     _props = dict(pp.getPageProperties())
                     _props.update(dict([ (k.lower(), v) for (k,v) in _props.items()]))
                     _props.update(page_id=pp.id, page_title=pp.title, page_spacekey=pp.spacekey)
                     _props.update(parent=parent)
 
-                    print unicode(config['format']).format(**_props).encode('utf-8')
+                    print(unicode(config['format']).format(**_props).encode('utf-8'))
             except UnicodeEncodeError:
                 import traceback
                 sys.stderr.write("Error formatting %s:%s\n %s\n" % (pp.spacekey, pp.title, repr(dict(pp.getPageProperties()))))

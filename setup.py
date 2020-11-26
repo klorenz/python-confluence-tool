@@ -11,7 +11,7 @@ setup(
     version=__version__,
     description='Confluence API and CLI',
     author='Kay-Uwe (Kiwi) Lorenz',
-    author_email='kiwi@franka.dyndns.org',
+    author_email='tabkiwi@gmail.com',
     install_requires=[
             'requests',
             'keyring',
@@ -20,6 +20,7 @@ setup(
             'pyquery',
             'pyaml',
             'pystache',
+            'six',
             'argdeco',
             'lxml'
         ],
@@ -39,8 +40,8 @@ setup(
 
     entry_points = dict(
         console_scripts = [
-            'ct = confluence_tool:main',
-            'confluence-tool = confluence_tool:main',
+            'ct = confluence_tool.cli:main',
+            'confluence-tool = confluence_tool.cli:main',
         ]
     ),
     license="MIT",

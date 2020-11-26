@@ -19,7 +19,7 @@ def cmd_page_prop_get(config):
         if first:
             first = False
         else:
-            print "---"
+            print("---")
 
         if config.get('add'):
             results.append(confluence.addLabels(pp.id, config['add']))
@@ -27,7 +27,7 @@ def cmd_page_prop_get(config):
             try:
                 results.append(confluence.deleteLabels(pp.id, config['remove']))
             except ConfluenceError as e:
-                print "Warning: %s" % e
+                print("Warning: %s" % e)
                 continue
 
         pyaml.p(pp.dict('id', 'spacekey', 'title', 'labels'))

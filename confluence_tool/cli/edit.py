@@ -32,7 +32,7 @@ def cmd_edit(config):
     if not config['file']:
         content = sys.stdin.read()
     else:
-        with open(fn, 'r') as f:
+        with open(config['file'], 'r') as f:
             content = f.read()
 
     try:
@@ -57,7 +57,7 @@ def cmd_edit(config):
     for page,content in confluence.editPages(confluence.resolveCQL(cql), filter=config.filter, editor=editor_config):
         found = True
         if not first:
-            print "---"
+            print("---")
         first = False
 
         from html5print import HTMLBeautifier
@@ -225,11 +225,11 @@ def move(config):
         result = confluence.movePage(page, parent=parent)
 
         if not first:
-            print "---"
+            print("---")
 
         pyaml.p(result)
 
         first = False
 
     if first:
-        print "could not find a page matching %s (%s)" % (cql, filter)
+        print("could not find a page matching %s (%s)" % (cql, filter))

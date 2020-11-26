@@ -5,7 +5,7 @@ class DataGenerator:
     def __init__(self, generator, api=None):
         self.api = api
         self.generator = generator
-        print generator
+        print(generator)
 
     def __call__(self, data):
         if "<ri:" in data or '<ac:' in data:

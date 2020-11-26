@@ -1,5 +1,11 @@
 import yaml
 
+import six
+
+if six.PY3:
+    unicode = str
+    basestring = str
+
 def get_list_data(data):
     #print "data", data
     if isinstance(data, basestring):

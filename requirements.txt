@@ -3,3 +3,8 @@ keyrings.alt
 html5print
 requests
 argdeco
+six
+pyquery
+pystache
+lxml
+pyaml

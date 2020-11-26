@@ -24,9 +24,9 @@ def get_parent(config):
         for result in results.values():
             if '{}' in config['format']:
                 fields = [ result[f] for f in config['field'] ]
-                print config['format'].format(*fields)
+                print(config['format'].format(*fields))
 
-            print output_filter(unicode(config['format']).format(**result)).encode('utf-8')
+            print(output_filter(unicode(config['format']).format(**result)).encode('utf-8'))
 
     else:
         if config['write'] == 'json':
@@ -153,9 +153,9 @@ def show(config):
         for result in results:
             if '{}' in config['format']:
                 fields = [ result[f] for f in config['field'] ]
-                print config['format'].format(*fields)
+                print(config['format'].format(*fields))
 
-            print output_filter(unicode(config['format']).format(**result)).encode('utf-8')
+            print(output_filter(unicode(config['format']).format(**result)).encode('utf-8'))
 
     elif config.get('data'):
         if config.get('data') == '-':

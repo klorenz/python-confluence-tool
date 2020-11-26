@@ -1,5 +1,5 @@
 from os.path import expanduser
-from confluence_tool import ConfluenceError, ConfluenceAPI
+from ..confluence_api import ConfluenceError, ConfluenceAPI, StandardError
 import pyaml, yaml
 import logging
 from yaml import SafeLoader
@@ -7,6 +7,11 @@ from yaml import SafeLoader
 logging.basicConfig()
 
 import keyring
+
+import six
+
+if six.PY3:
+    StandardError = Exception
 
 class ConfigFileMissing(StandardError):
     pass
@@ -104,7 +109,7 @@ class Config:
         old_baseurl = config[config_name].get('baseurl')
         old_username = config[config_name].get('username')
 
-        print "ou: %s" % old_username
+        print("ou: %s" % old_username)
 
         baseurl  = self.args.get('baseurl')
         username = self.args.get('username')
@@ -128,7 +133,7 @@ class Config:
             username = username,
         )
 
-        print "Password will be stored in your systems keyring."
+        print("Password will be stored in your systems keyring.")
         import getpass
         password = getpass.getpass("Password (%s): " % username)
         keyring.set_password('confluence-tool '+baseurl, username, password)
@@ -195,15 +200,15 @@ def main(argv=None):
             traceback.print_exc()
             return 1
         else:
-            print (u"%s" % e).encode('utf-8')
+            print((u"%s" % e).encode('utf-8'))
             return 1
 
-import edit
-import page_prop
-import show
-import config
-import labels
-import comala_workflow
-import space
+from . import edit
+from . import page_prop
+from . import show
+from . import config
+from . import labels
+from . import comala_workflow
+from . import space
 
 argparser = command.argparser

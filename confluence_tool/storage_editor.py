@@ -8,6 +8,11 @@ from lxml import etree
 
 from lxml.etree import XMLSyntaxError
 
+import six
+
+if six.PY3:
+    StandardError = Exception
+
 import logging
 log = logging.getLogger('confluence-tool.storage_editor')
 

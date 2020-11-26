@@ -1,4 +1,9 @@
-from urlparse import urlparse
+import six
+if six.PY3:
+    from urllib.parse import urlparse
+else:
+    from urlparse import urlparse
+
 from .page import Page
 import re, json
 import requests
@@ -17,6 +22,8 @@ def is_string(s):
     # python 2.7
     return isinstance(s, basestring)
 
+if six.PY3:
+    StandardError = Exception
 class ConfluenceError(StandardError):
     pass
 

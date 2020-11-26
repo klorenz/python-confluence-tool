@@ -7,3 +7,4 @@ pyquery
 MANIFEST
 dist
 docs/_build
+/venv

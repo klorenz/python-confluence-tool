@@ -21,7 +21,7 @@ def cw_info(config):
     first = True
     for page in confluence.getPages(pages=config.cql):
         if not first:
-            print "---"
+            print("---")
         result = confluence.cwInfo(page, config.expand)
         first = False
         print_info(page, result)
@@ -41,7 +41,7 @@ def cw_approve(config):
     first = True
     for page in confluence.getPages(pages=config.cql):
         if not first:
-            print "---"
+            print("---")
         first = False
         if not config.name:
             result = confluence.cwInfo(page,expand='approvals')
@@ -88,7 +88,7 @@ def cw_reject(config):
     first = True
     for page in confluence.getPages(pages=config.cql):
         if not first:
-            print "---"
+            print("---")
         first = False
         if not config.name:
             result = confluence.cwInfo(page,expand='approvals')

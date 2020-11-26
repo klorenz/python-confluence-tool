@@ -1,8 +1,13 @@
-from HTMLParser import HTMLParser
+import six
+
+if six.PY3:
+    from html.parser import HTMLParser
+else:
+    from HTMLParser import HTMLParser
+
 htmlparser = HTMLParser()
 
 from lxml.etree import XMLSyntaxError
-
 
 import logging
 log = logging.getLogger('confluence-tool.page')

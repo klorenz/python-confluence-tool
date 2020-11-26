@@ -21,9 +21,9 @@ def have_data_on_stdin():
     import select
 
     if select.select([sys.stdin,],[],[],0.0)[0]:
-        print "Have data!"
+        print("Have data!")
     else:
-        print "No data"
+        print("No data")
 
 from pprint import pprint
 
