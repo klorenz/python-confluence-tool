@@ -1,6 +1,9 @@
 from .cli import *
 
 space_command = command.add_subcommands('space', help="working spaces")
+import six
+if six.PY3:
+    unicode = str
 
 @space_command('ls', arg_format(default="{key:10s} {name}"), arg_write_format(default='format'), arg_expand, arg_status, arg_label,
     arg('-t', '--type', choices=('global', 'personal', 'all'), default="global", help="space type"),
@@ -30,3 +33,10 @@ def space_list(config):
         elif config['write'] == 'yaml':
             import pyaml
             pyaml.p(results)
+
+# @space_command('export', arg_status, arg_label,)
+#     kwargs = config.dict('expand', 'status', 'type', 'label')
+#     if kwargs['type'] == 'all':
+#         del kwargs['type']
+
+#     results = [ r for r in config.confluence_api.listSpaces(**kwargs) ]

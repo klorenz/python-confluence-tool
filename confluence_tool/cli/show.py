@@ -3,6 +3,12 @@ import sys
 import logging
 log = logging.getLogger('show')
 
+import pyaml
+
+import six
+if six.PY3:
+    unicode = str
+
 @command('get-parent', positional_arg_cql, arg_write_format, arg_format)
 def get_parent(config):
     """
@@ -26,7 +32,10 @@ def get_parent(config):
                 fields = [ result[f] for f in config['field'] ]
                 print(config['format'].format(*fields))
 
-            print(output_filter(unicode(config['format']).format(**result)).encode('utf-8'))
+            if six.PY3:
+                print(output_filter(config['format'].format(**result)))
+            else:
+                print(output_filter(unicode(config['format']).format(**result)).encode('utf-8'))
 
     else:
         if config['write'] == 'json':
@@ -55,12 +64,6 @@ def get_parent(config):
     arg('field', nargs="*", help='field to dump')
 )
 def show(config):
-    """show a confluence item
-
-
-    """
-
-
     """show a confluence item
 
     If specifying data selector file, there is added a special field
@@ -121,14 +124,14 @@ def show(config):
             output_filter = lambda x: HTMLBeautifier.beautify(x, 4)
 
         elif config.get('storage'):
-            config['format'] = u'{body[storage][value]}'
+            config['format'] = unicode('{body[storage][value]}')
             config['expand'] = 'body.storage'
 
             from html5print import HTMLBeautifier
             output_filter = lambda x: HTMLBeautifier.beautify(x, 4)
 
         elif config.get('ls'):
-            config['format'] = u'{id}  {spacekey}  {title}'
+            config['format'] = unicode('{id}  {spacekey}  {title}')
             config['field'] = ['id', 'spacekey', 'title']
 
     results = []
@@ -155,7 +158,10 @@ def show(config):
                 fields = [ result[f] for f in config['field'] ]
                 print(config['format'].format(*fields))
 
-            print(output_filter(unicode(config['format']).format(**result)).encode('utf-8'))
+            if six.PY3:
+                print(output_filter(config['format'].format(**result)))
+            else:
+                print(output_filter(unicode(config['format']).format(**result)).encode('utf-8'))
 
     elif config.get('data'):
         if config.get('data') == '-':

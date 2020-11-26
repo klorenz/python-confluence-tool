@@ -60,14 +60,21 @@ def cmd_page_prop_get(config):
 
                 if '{}' in config['format']:
                     fields = [ pp.pageProperty.get(f, '') for f in config['props'] ]
-                    print(unicode(config['format']).format(*fields).encode('utf-8'))
+                    if six.PY3:
+                        print(config['format'].format(*fields))
+                    else:
+                        print(unicode(config['format']).format(*fields).encode('utf-8'))
                 else:
                     _props = dict(pp.getPageProperties())
                     _props.update(dict([ (k.lower(), v) for (k,v) in _props.items()]))
                     _props.update(page_id=pp.id, page_title=pp.title, page_spacekey=pp.spacekey)
                     _props.update(parent=parent)
 
-                    print(unicode(config['format']).format(**_props).encode('utf-8'))
+                    if six.PY3:
+                        print(config['format'].format(*fields))
+                    else:
+                        print(unicode(config['format']).format(**_props).encode('utf-8'))
+
             except UnicodeEncodeError:
                 import traceback
                 sys.stderr.write("Error formatting %s:%s\n %s\n" % (pp.spacekey, pp.title, repr(dict(pp.getPageProperties()))))

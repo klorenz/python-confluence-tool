@@ -200,7 +200,10 @@ def main(argv=None):
             traceback.print_exc()
             return 1
         else:
-            print((u"%s" % e).encode('utf-8'))
+            if six.PY3:
+                print("%s" % e)
+            else:
+                print((unicode("%s") % e).encode('utf-8'))
             return 1
 
 from . import edit

@@ -16,14 +16,16 @@ import logging
 logger = logging.getLogger('confluence.api')
 #logger.setLevel(logging.DEBUG)
 
+if six.PY3:
+    StandardError = Exception
+    basestring = str
+
 filter_func = filter
 
 def is_string(s):
     # python 2.7
     return isinstance(s, basestring)
 
-if six.PY3:
-    StandardError = Exception
 class ConfluenceError(StandardError):
     pass
 
