@@ -214,7 +214,7 @@ def cmd_page_prop_set(config):
                 else:
                     if not isinstance(_prop[op], list):
                         _prop[op] = [ _prop[op] ]
-                    _prop[op].append(vlaue)
+                    _prop[op].append(value)
 
                 _order.append(name)
 
