@@ -1,5 +1,5 @@
 from os.path import expanduser
-from ..confluence_api import ConfluenceError, ConfluenceAPI, StandardError
+from ..confluence_api import ConfluenceError, ConfluenceAPI
 import pyaml, yaml
 import logging
 from yaml import SafeLoader
