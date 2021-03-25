@@ -13,4 +13,4 @@ def argparse():
     from argdeco import command
     return command.argparser
 
-__version__ = "0.6.3"
+__version__ = "0.6.4"
