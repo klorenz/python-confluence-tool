@@ -60,12 +60,15 @@ def extract_data(elem, need_data=False):
 
         for a in d('a'):
             _a = d(a)
+
+            if _a.attr('href') is None: continue
+
             if _a.hasClass('confluence-userlink'):
                 username = _a.attr('data-username')
                 users.append(dict(username=username))
                 _a.html("[~%s]" % username)
 
-            elif _a.attr('href').startswith('mailto:'):
+            elif (_a.attr('href') or "").startswith('mailto:'):
                 address = _a.attr('href')[7:]
                 mailAddresses.append(address)
                 _a.html(address)

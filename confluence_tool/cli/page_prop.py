@@ -300,6 +300,10 @@ def cmd_page_prop_set(config):
                 del doc['pageProperties']
 
         if 'page' not in doc and 'pages' not in doc:
+            if 'id' in doc:
+                doc['page'] = doc['id']
+                del doc['id']
+
             doc['page'] = "%s:%s" % (doc['spacekey'], doc['title'])
 
         doc_labels = doc.get('labels', doc.get('label', []))
