@@ -4,11 +4,14 @@ if six.PY3:
 
     def urldecode(s):
         return unquote(s).replace("+", " ")
+
+    basestring = str
 else:
     from urllib import unquote
 
     def urldecode(s):
         return unquote(s).decode('utf8').replace(u"+", u" ")
+
 
 import logging
 logger = logging.getLogger("confluence.page.props")
