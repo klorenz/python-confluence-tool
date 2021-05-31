@@ -1,4 +1,4 @@
-import yaml, pyaml, sys
+import yaml, pyaml, sys, six
 from difflib import Differ
 from .cli import command, arg, optarg_cql, arg_filter, arg_parent, arg_add_label, arg_pagename, arg_page_type
 from ..storage_editor import StorageEditor
@@ -7,6 +7,8 @@ from ..storage_editor import StorageEditor
 # )
 # def cmd_create(config):
 
+if six.PY3:
+    basestring = str
 
 @command('edit',
     optarg_cql,
