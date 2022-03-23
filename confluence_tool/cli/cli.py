@@ -188,6 +188,7 @@ def _handle_method(method, config, data=None, json=None):
         if config.get('stream'):
             _len = 0
             for data in result.iter_content(chunk_size=1024*1024):
+                data = data.decode("utf-8")
                 outstream.write(data)
 
                 _len += len(data)
