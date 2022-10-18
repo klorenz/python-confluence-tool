@@ -2,12 +2,20 @@ import six
 
 if six.PY3:
     from html.parser import HTMLParser
+    from html import unescape
 else:
     from HTMLParser import HTMLParser
 
 htmlparser = HTMLParser()
 
 from lxml.etree import XMLSyntaxError
+
+# PY3
+def _unescape(value):
+    if six.PY3:
+        return unescape(value)
+    else:
+        return HTMLParser.unescape(value)
 
 import logging
 log = logging.getLogger('confluence-tool.page')
@@ -24,13 +32,13 @@ class Page(object):
                 body = body['storage']
 
                 log.debug("body: %s", body['value'])
-                body['value'] = htmlparser.unescape(body['value'])
+                body['value'] = _unescape(body['value'])
                 log.debug("unescaped body: %s", body['value'])
 
             elif 'view' in body:
                 body = body['view']
                 log.debug("unescaped body")
-                body['value'] = htmlparser.unescape(body['value'])
+                body['value'] = _unescape(body['value'])
 
 
         if hasattr(expand, 'split'):
